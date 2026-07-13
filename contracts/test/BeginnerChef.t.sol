@@ -6,6 +6,8 @@ import {BeginnerChef} from "../src/BeginnerChef.sol";
 import {MockA} from "../src/mocks/MockA.sol";
 import {MockB} from "../src/mocks/MockB.sol";
 import {MockC} from "../src/mocks/MockC.sol";
+import {MockFeeOnTransfer} from "../src/mocks/MockFeeOnTransfer.sol";
+import {MockMalicious} from "../src/mocks/MockMalicious.sol";
 import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 
 contract BeginnerChefTest is Test {
@@ -283,5 +285,115 @@ contract BeginnerChefTest is Test {
         // 1e14 is 0.01% in standard representation, but assertApproxEqRel takes 1e18 as 100%
         // So 1e14 = 0.01% tolerance.
         assertApproxEqRel(left, right, 1e14);
+    }
+
+    function test_Reentrancy_BlocksMaliciousToken() public {
+        MockMalicious maliciousToken = new MockMalicious("Malicious", "MAL");
+        chef.add(100, maliciousToken);
+        uint256 pid = 0;
+
+        maliciousToken.mint(alice, 1000 ether);
+        vm.prank(alice);
+        maliciousToken.approve(address(chef), type(uint256).max);
+
+        // configure malicious token to reenter deposit
+        maliciousToken.setChef(address(chef), pid, true);
+
+        vm.prank(alice);
+        vm.expectRevert(); // Should revert due to ReentrancyGuard
+        chef.deposit(pid, 100 ether);
+    }
+
+    function test_FeeOnTransfer_MismatchedAccounting() public {
+        MockFeeOnTransfer fotToken = new MockFeeOnTransfer("FOT", "FOT");
+        chef.add(100, fotToken);
+        uint256 pid = 0;
+
+        fotToken.mint(alice, 100 ether);
+        fotToken.mint(bob, 100 ether);
+        
+        vm.prank(alice);
+        fotToken.approve(address(chef), type(uint256).max);
+
+        vm.prank(bob);
+        fotToken.approve(address(chef), type(uint256).max);
+
+        // Alice deposits 100 ether. FOT token burns 10%, contract receives 90 ether.
+        vm.prank(alice);
+        chef.deposit(pid, 100 ether);
+
+        // Alice's stakedAmount is 100, but contract only received 90.
+        (uint256 stakedAmountAlice, ) = chef.userInfo(pid, alice);
+        assertEq(stakedAmountAlice, 100 ether);
+        assertEq(fotToken.balanceOf(address(chef)), 90 ether);
+
+        // Bob deposits 100 ether, contract receives another 90 ether.
+        // Total contract balance = 180 ether.
+        vm.prank(bob);
+        chef.deposit(pid, 100 ether);
+
+        // Alice withdraws 100 ether (which she is credited for).
+        // Since contract has 180 ether, this succeeds, stealing Bob's tokens!
+        vm.prank(alice);
+        chef.withdraw(pid, 100 ether);
+
+        // Bob is now left with only 80 ether in the contract, despite staking 100.
+        assertEq(fotToken.balanceOf(address(chef)), 80 ether);
+
+        // Bob tries to withdraw his 100 ether, but contract only has 80.
+        // Reverts due to ERC20 insufficient balance.
+        vm.prank(bob);
+        vm.expectRevert();
+        chef.withdraw(pid, 100 ether);
+    }
+
+    function test_DonationAttack_DilutesRewards() public {
+        chef.add(100, stakedToken1);
+        uint256 pid = 0;
+
+        // Bob deposits 100 normally
+        vm.prank(bob);
+        chef.deposit(pid, 100 ether);
+
+        // Alice (attacker) donates 900 ether directly to the contract (bypassing deposit)
+        vm.prank(alice);
+        stakedToken1.transfer(address(chef), 900 ether);
+
+        // Fast forward 10 seconds.
+        // In 10 seconds, 100 ether rewards are accrued to this pool.
+        skip(10);
+        
+        // Because Alice donated 900 ether, the pool's token balance is 1000 ether.
+        // The accRewardPerToken formula uses token balance as the denominator.
+        // So the reward rate is diluted 10x!
+        uint256 bobPending = chef.pendingRewards(pid, bob);
+        
+        // Bob gets only 10 ether (100 * 100 / 1000) instead of the 100 ether he deserves.
+        assertEq(bobPending, 10 ether);
+    }
+
+    function test_RoundingPrecisionDust() public {
+        chef.add(100, stakedToken1);
+        uint256 pid = 0;
+
+        // Mint a lot of tokens to Bob to inflate lpSupply
+        stakedToken1.mint(bob, 10_000_000 ether);
+        vm.prank(bob);
+        stakedToken1.approve(address(chef), type(uint256).max);
+
+        // Bob deposits a massive amount
+        vm.prank(bob);
+        chef.deposit(pid, 10_000_000 ether);
+
+        // Alice stakes just 1 wei
+        vm.prank(alice);
+        chef.deposit(pid, 1);
+
+        // Fast forward 10 seconds (100 ether reward)
+        skip(10);
+        
+        // Because Alice's stake is so tiny compared to lpSupply, her reward rounds down to 0 safely.
+        uint256 alicePending = chef.pendingRewards(pid, alice);
+        assertEq(alicePending, 0);
     }
 }
