@@ -147,8 +147,27 @@ contract BeginnerChef is Ownable , ReentrancyGuard{
 
     }
 
-    function pendingRewards() external view {
+    function pendingRewards(uint256 _pid , address _user) external view returns(uint256) {
+        PoolInfo storage pool = poolInfo[_pid];
+        UserInfo storage user = userInfo[_pid][_user];
 
+        uint256 accRewardPerToken = pool.accRewardPerToken; // start from stored value
+        uint256 poolTokens = pool.stakedToken.balanceOf(address(this));
+
+        // if time has passed AND there are tokens staked, simulate the update
+        if(block.timestamp > pool.lastRewardTime && poolTokens != 0){
+
+            // Time elapsed    
+            uint256 timeElapsed = block.timestamp - pool.lastRewardTime;
+
+            // This pool's share of total rewards over that time
+            uint256 reward = timeElapsed * rewardPerSecond * pool.allocpoint / totalAllocPoint;
+
+            // Update the accumulator(local variable), scaled by 1e12
+            accRewardPerToken += (reward * 1e12) / poolTokens;
+        }
+
+        return (user.stakedAmount * accRewardPerToken) / 1e12 - user.rewardDebt;
     }
 
     function emergencyWithdraw() external {
