@@ -40,8 +40,23 @@ contract BeginnerChef is Ownable , ReentrancyGuard{
         rewardPerSecond = _rewardPerSecond;
     }
 
-    function add() public onlyOwner {  
+    function add(uint256 _allocPoint , IERC20 _stakedToken) public onlyOwner {  
 
+        // update all existing pools first — think about why
+        massUpdatePools();
+
+        // Update totalAllocPoint to include this new pool's weight
+        totalAllocPoint  = totalAllocPoint + _allocPoint;
+
+        // Push a new PoolInfo into poolInfo[]
+        poolInfo.push(
+            PoolInfo({
+                stakedToken: _stakedToken , 
+                allocpoint: _allocPoint , 
+                lastRewardTime: block.timestamp,
+                accRewardPerToken: 0
+            })
+        );
     }
 
     function set() public onlyOwner {
@@ -143,8 +158,12 @@ contract BeginnerChef is Ownable , ReentrancyGuard{
 
     }
 
+    // Update reward vairables for all pools
     function massUpdatePools() public {
-
+        uint256 length = poolInfo.length;
+        for(uint256 pid = 0; pid < length ; pid++){
+            updatePool(pid);
+        }
     }
 
     function pendingRewards(uint256 _pid , address _user) external view returns(uint256) {
