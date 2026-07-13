@@ -34,15 +34,16 @@ contract BeginnerChef is Ownable , ReentrancyGuard{
 
     event Deposit(address indexed user, uint256 indexed pid, uint256 amount);
     event Withdraw(address indexed user, uint256 indexed pid, uint256 amount);
+    event EmergencyWithdraw(address indexed user , uint256 indexed pid, uint256 amount);
 
     constructor(IERC20 _rewardToken , uint256 _rewardPerSecond) Ownable(msg.sender) {
         rewardToken = _rewardToken;
         rewardPerSecond = _rewardPerSecond;
     }
 
-    function add(uint256 _allocPoint , IERC20 _stakedToken) public onlyOwner {  
+    function add(uint256 _allocPoint , IERC20 _stakedToken) external onlyOwner {  
 
-        // update all existing pools first — think about why
+        // update all existing pools first 
         massUpdatePools();
 
         // Update totalAllocPoint to include this new pool's weight
@@ -59,9 +60,17 @@ contract BeginnerChef is Ownable , ReentrancyGuard{
         );
     }
 
-    function set() public onlyOwner {
+    function set(uint256 _pid , uint256 _allocPoint) external onlyOwner {
 
-    }
+        // update all existing pools first 
+        massUpdatePools();
+
+        // Recalculate totalAllocPoint: remove the pool's OLD allocPoint, add the NEW one
+        totalAllocPoint = (totalAllocPoint - poolInfo[_pid].allocpoint) + _allocPoint;
+
+        // Actually update the pool's allocPoint
+        poolInfo[_pid].allocpoint = _allocPoint;
+    }   
 
     function deposit(uint256 _pid , uint256 amount) external nonReentrant{
 
@@ -189,8 +198,22 @@ contract BeginnerChef is Ownable , ReentrancyGuard{
         return (user.stakedAmount * accRewardPerToken) / 1e12 - user.rewardDebt;
     }
 
-    function emergencyWithdraw() external {
+    function emergencyWithdraw(uint256 _pid) external nonReentrant {
 
+        UserInfo storage user = userInfo[_pid][msg.sender];
+        PoolInfo storage pool = poolInfo[_pid];
+
+        // Cache the amount before clearing state
+        uint256 amount = user.stakedAmount;
+        
+        // Reset user's state COMPLETELY — both fields
+        user.stakedAmount = 0;
+        user.rewardDebt = 0;
+
+        // Transfer their staked tokens back — nothing else
+        pool.stakedToken.safeTransfer(msg.sender , amount);
+
+        emit EmergencyWithdraw(msg.sender , _pid , amount);
     }
 
 }   
