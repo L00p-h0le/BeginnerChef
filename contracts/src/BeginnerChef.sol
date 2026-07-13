@@ -88,9 +88,6 @@ contract BeginnerChef is Ownable , ReentrancyGuard{
             pendingReward = (user.stakedAmount * pool.accRewardPerToken) / 1e12 - user.rewardDebt;   
         }
 
-        // Pull the new tokens in from the user
-        pool.stakedToken.transferFrom(msg.sender , address(this) , amount);
-
         // Update their staked amount
         user.stakedAmount += amount;
 
