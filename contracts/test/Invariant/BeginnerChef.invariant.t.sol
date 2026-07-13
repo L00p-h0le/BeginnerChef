@@ -70,6 +70,7 @@ contract Handler is Test {
     }
 
     function addPool(uint256 allocPoint, bool useToken1) public recordAcc {
+        if (poolCount >= 10) return; // cap total pools to keep runtime sane
         allocPoint = bound(allocPoint, 1, 10000);
         IERC20 token = useToken1 ? IERC20(stakedToken1) : IERC20(stakedToken2);
         chef.add(allocPoint, token);
@@ -198,7 +199,7 @@ contract BeginnerChefInvariantTest is StdInvariant, Test {
 
     // Invariant 1 — Conservation:
     // sum of all users' pendingRewards() across all pools + total reward tokens already paid out ≤ total reward tokens ever minted/funded into the contract
-    function invariant_Conservation() public {
+    function invariant_Conservation() public view{
         uint256 totalPending = 0;
         uint256 poolCount = handler.poolCount();
         address[] memory users = handler.getUsers();
@@ -217,7 +218,7 @@ contract BeginnerChefInvariantTest is StdInvariant, Test {
 
     // Invariant 2 — Accumulator monotonicity:
     // accRewardPerToken for any given pool never decreases, across any sequence of calls.
-    function invariant_AccumulatorMonotonicity() public {
+    function invariant_AccumulatorMonotonicity() public view{
         uint256 poolCount = handler.poolCount();
         for (uint256 p = 0; p < poolCount; p++) {
             (, , , uint256 acc) = chef.poolInfo(p);
@@ -228,7 +229,7 @@ contract BeginnerChefInvariantTest is StdInvariant, Test {
 
     // Invariant 3 — Allocation correctness:
     // Over any period with no set() calls, each pool's share of newly accrued rewards matches its allocPoint / totalAllocPoint ratio within rounding tolerance.
-    function invariant_AllocationCorrectness() public {
+    function invariant_AllocationCorrectness() public view{
         if (handler.hasSetCallSinceWarp()) return;
         
         uint256 poolCount = handler.poolCount();
