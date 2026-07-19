@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { BrowserProvider, parseUnits, formatUnits } from "ethers";
+import { toast } from "sonner";
 import { getChefContract, getERC20Contract, CHEF_ADDRESS } from "../utils/contracts";
 
 interface PoolCardProps {
@@ -19,7 +20,6 @@ export function PoolCard({ provider, pid, address, symbol, totalAllocPoint }: Po
   const [balance, setBalance] = useState("0");
   const [poolShare, setPoolShare] = useState("0");
   const [loading, setLoading] = useState(false);
-  const [txStatus, setTxStatus] = useState<{ type: "success" | "error"; text: string } | null>(null);
 
   const loadData = async () => {
     if (!provider) return;
@@ -58,23 +58,22 @@ export function PoolCard({ provider, pid, address, symbol, totalAllocPoint }: Po
     return () => clearInterval(interval);
   }, [provider, pid, totalAllocPoint]);
 
-  const showStatus = (type: "success" | "error", text: string) => {
-    setTxStatus({ type, text });
-    setTimeout(() => setTxStatus(null), 4000);
-  };
-
   const handleApprove = async () => {
     if (!provider) return;
     setLoading(true);
     try {
       const token = await getERC20Contract(address, provider);
       const tx = await token.approve(CHEF_ADDRESS, parseUnits(stakeAmount || "0"));
+      toast.promise(tx.wait(), {
+        loading: "Approving...",
+        success: "Approved",
+        error: "Approval failed"
+      });
       await tx.wait();
       await loadData();
-      showStatus("success", "Approved");
     } catch (err) {
       console.error(err);
-      showStatus("error", "Approval failed");
+      toast.error("Approval failed");
     }
     setLoading(false);
   };
@@ -85,13 +84,17 @@ export function PoolCard({ provider, pid, address, symbol, totalAllocPoint }: Po
     try {
       const chef = await getChefContract(provider);
       const tx = await chef.deposit(pid, parseUnits(stakeAmount));
+      toast.promise(tx.wait(), {
+        loading: "Staking...",
+        success: `Staked ${stakeAmount} ${symbol}`,
+        error: "Stake failed"
+      });
       await tx.wait();
       setStakeAmount("");
       await loadData();
-      showStatus("success", `Staked ${stakeAmount} ${symbol}`);
     } catch (err) {
       console.error(err);
-      showStatus("error", "Stake failed");
+      toast.error("Stake failed");
     }
     setLoading(false);
   };
@@ -99,20 +102,24 @@ export function PoolCard({ provider, pid, address, symbol, totalAllocPoint }: Po
   const handleWithdraw = async () => {
     if (!provider || !withdrawAmount || Number(withdrawAmount) <= 0) return;
     if (Number(withdrawAmount) > Number(staked)) {
-      showStatus("error", "Exceeds staked balance");
+      toast.error("Exceeds staked balance");
       return;
     }
     setLoading(true);
     try {
       const chef = await getChefContract(provider);
       const tx = await chef.withdraw(pid, parseUnits(withdrawAmount));
+      toast.promise(tx.wait(), {
+        loading: "Withdrawing...",
+        success: `Withdrew ${withdrawAmount} ${symbol}`,
+        error: "Withdraw failed"
+      });
       await tx.wait();
       setWithdrawAmount("");
       await loadData();
-      showStatus("success", `Withdrew ${withdrawAmount} ${symbol}`);
     } catch (err) {
       console.error(err);
-      showStatus("error", "Withdraw failed");
+      toast.error("Withdraw failed");
     }
     setLoading(false);
   };
@@ -123,12 +130,16 @@ export function PoolCard({ provider, pid, address, symbol, totalAllocPoint }: Po
     try {
       const chef = await getChefContract(provider);
       const tx = await chef.withdraw(pid, 0); // Claim only
+      toast.promise(tx.wait(), {
+        loading: "Claiming rewards...",
+        success: "Rewards claimed",
+        error: "Claim failed"
+      });
       await tx.wait();
       await loadData();
-      showStatus("success", "Rewards claimed");
     } catch (err) {
       console.error(err);
-      showStatus("error", "Claim failed");
+      toast.error("Claim failed");
     }
     setLoading(false);
   };
@@ -141,12 +152,16 @@ export function PoolCard({ provider, pid, address, symbol, totalAllocPoint }: Po
     try {
       const chef = await getChefContract(provider);
       const tx = await chef.emergencyWithdraw(pid);
+      toast.promise(tx.wait(), {
+        loading: "Emergency withdrawing...",
+        success: "Emergency Withdrawn",
+        error: "Emergency Withdraw failed"
+      });
       await tx.wait();
       await loadData();
-      showStatus("success", "Emergency Withdrawn");
     } catch (err) {
       console.error(err);
-      showStatus("error", "Emergency Withdraw failed");
+      toast.error("Emergency Withdraw failed");
     }
     setLoading(false);
   };
@@ -307,26 +322,24 @@ export function PoolCard({ provider, pid, address, symbol, totalAllocPoint }: Po
           <button
             onClick={handleEmergencyWithdraw}
             disabled={loading}
-            className="mt-1 text-xs font-medium text-left transition-colors hover:underline"
-            style={{ color: "var(--color-error)" }}
+            className="w-full mt-3 py-2 rounded-xl text-sm font-bold transition-all flex items-center justify-center gap-2 border"
+            style={{ 
+              backgroundColor: "rgba(239, 68, 68, 0.1)",
+              color: "var(--color-error)",
+              borderColor: "rgba(239, 68, 68, 0.3)"
+            }}
             title="Use this if normal withdraw fails. You will forfeit your pending rewards."
           >
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path>
+              <line x1="12" y1="9" x2="12" y2="13"></line>
+              <line x1="12" y1="17" x2="12.01" y2="17"></line>
+            </svg>
             Emergency Withdraw (Forfeit Rewards)
           </button>
         )}
       </div>
 
-      {/* Status Message */}
-      {txStatus && (
-        <p
-          className="text-xs font-medium text-center py-1 animate-pulse"
-          style={{
-            color: txStatus.type === "success" ? "var(--color-success)" : "var(--color-error)",
-          }}
-        >
-          {txStatus.text}
-        </p>
-      )}
     </div>
   );
 }

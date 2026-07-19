@@ -1,11 +1,11 @@
-import { useState, useEffect } from 'react'
-import { Routes, Route, NavLink } from 'react-router-dom'
+import { useState, useEffect } from "react";
+import { BrowserRouter, Routes, Route, Link, NavLink, useLocation } from "react-router-dom";
+import { Toaster } from "sonner";
 import { BrowserProvider, formatEther } from 'ethers'
-import { getProvider, getChefContract, POOLS, EXPECTED_CHAIN_ID } from './utils/contracts'
+import { getProvider, getChefContract, getERC20Contract, REWARD_TOKEN_ADDRESS, POOLS, EXPECTED_CHAIN_ID } from './utils/contracts'
 import { PoolCard } from './components/PoolCard'
 import { FaucetPage } from './components/FaucetPage'
 import { HistoryPage } from './components/HistoryPage'
-import './App.css'
 
 function Dashboard({
   provider,
@@ -133,6 +133,7 @@ function App() {
   const [isWrongNetwork, setIsWrongNetwork] = useState(false)
   const [totalAllocPoint, setTotalAllocPoint] = useState<number>(0)
   const [rewardRate, setRewardRate] = useState<string>("0")
+  const [rwdBalance, setRwdBalance] = useState<string>("0")
 
   const connectWallet = async () => {
     const prov = getProvider()
@@ -166,6 +167,7 @@ function App() {
     setAccount('')
     setTotalAllocPoint(0)
     setRewardRate("0")
+    setRwdBalance("0")
   }
 
   const loadGlobalData = async () => {
@@ -177,6 +179,16 @@ function App() {
 
       const rate = await chef.rewardPerSecond()
       setRewardRate(formatEther(rate))
+
+      try {
+        const signer = await provider.getSigner()
+        const userAddr = await signer.getAddress()
+        const rwdToken = await getERC20Contract(REWARD_TOKEN_ADDRESS, provider)
+        const bal = await rwdToken.balanceOf(userAddr)
+        setRwdBalance(formatEther(bal))
+      } catch (e) {
+        console.error("Error fetching RWD balance", e)
+      }
     } catch (err) {
       console.error(err)
     }
@@ -185,6 +197,8 @@ function App() {
   useEffect(() => {
     if (provider) {
       loadGlobalData()
+      const interval = setInterval(loadGlobalData, 5000)
+      return () => clearInterval(interval)
     }
   }, [provider])
 
@@ -204,6 +218,7 @@ function App() {
 
   return (
     <div className="min-h-screen flex flex-col">
+      <Toaster theme="dark" position="bottom-right" />
       {/* ── Navbar ── */}
       <nav
         className="glass-card mx-4 mt-4 px-6 py-3.5 flex justify-between items-center rounded-2xl sticky top-4 z-50"
@@ -275,18 +290,29 @@ function App() {
 
           {/* Wallet */}
           {account ? (
-            <button
-              onClick={disconnectWallet}
-              className="px-3.5 py-1.5 rounded-xl font-mono text-xs transition-colors hover:bg-red-500/10 hover:text-red-400 hover:border-red-500/30"
-              style={{
-                background: "rgba(0,0,0,0.4)",
-                border: "1px solid var(--color-surface-border)",
-                color: "var(--color-text-secondary)",
-              }}
-              title="Click to disconnect"
-            >
-              {account.substring(0, 6)}…{account.substring(account.length - 4)}
-            </button>
+            <div className="flex items-center gap-2">
+              <span 
+                className="text-xs font-bold px-3 py-1.5 rounded-xl hidden sm:inline-block"
+                style={{
+                  color: "var(--color-primary)",
+                  background: "var(--color-primary-glow)",
+                  border: "1px solid var(--color-primary-border)"
+                }}
+              >
+                {Number(rwdBalance).toFixed(2)} RWD
+              </span>
+              <button
+                onClick={disconnectWallet}
+                className="px-3.5 py-1.5 rounded-xl font-mono text-xs transition-colors hover:bg-red-500/10 hover:text-red-400 hover:border-red-500/30"
+                style={{
+                  background: "rgba(0,0,0,0.4)",
+                  border: "1px solid var(--color-surface-border)",
+                  color: "var(--color-text-secondary)",
+                }}
+              >
+                {account.slice(0, 6)}...{account.slice(-4)}
+              </button>
+            </div>
           ) : (
             <button
               onClick={connectWallet}
