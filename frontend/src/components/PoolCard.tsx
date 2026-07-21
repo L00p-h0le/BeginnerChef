@@ -174,29 +174,36 @@ export function PoolCard({ provider, pid, address, symbol, totalAllocPoint }: Po
       <div className="flex justify-between items-center">
         <div className="flex items-center gap-3">
           <div
-            className="w-10 h-10 rounded-full flex items-center justify-center text-sm font-bold"
+            className="w-10 h-10 flex items-center justify-center text-sm font-bold"
             style={{
-              background: "var(--color-primary-glow)",
-              color: "var(--color-primary)",
+              background: "var(--color-accent-blue)",
+              color: "var(--color-accent-blue-text)",
+              borderRadius: "8px",
             }}
           >
             {symbol.substring(0, 2)}
           </div>
           <div>
             <h3
-              className="text-lg font-bold text-[var(--color-text-primary)]"
-              style={{ fontFamily: "var(--font-display)" }}
+              className="text-lg font-bold"
+              style={{
+                fontFamily: "var(--font-display)",
+                color: "var(--color-text-primary)",
+                fontWeight: 400,
+              }}
             >
               {symbol} Pool
             </h3>
-            <p className="text-xs text-[var(--color-text-muted)]">Earn RWD</p>
+            <p className="text-xs" style={{ color: "var(--color-text-muted)" }}>Earn RWD</p>
           </div>
         </div>
-        <span className="pill-badge" style={{
-          background: "var(--color-primary-glow)",
-          color: "var(--color-primary)",
-          border: "1px solid var(--color-primary-border)",
-        }}>
+        <span
+          className="pill-badge"
+          style={{
+            background: "var(--color-accent-yellow)",
+            color: "var(--color-accent-yellow-text)",
+          }}
+        >
           {poolShare}% Share
         </span>
       </div>
@@ -204,60 +211,87 @@ export function PoolCard({ provider, pid, address, symbol, totalAllocPoint }: Po
       {/* Stats */}
       <div className="grid grid-cols-2 gap-3">
         <div
-          className="p-4 rounded-xl"
-          style={{ background: "rgba(0,0,0,0.3)" }}
+          className="p-4"
+          style={{
+            background: "var(--color-surface-high)",
+            border: "1px solid var(--color-surface-border)",
+            borderRadius: "8px",
+          }}
         >
-          <p className="text-xs font-medium uppercase tracking-wider text-[var(--color-text-muted)] mb-1">
+          <p
+            className="text-xs font-medium uppercase tracking-wider mb-1"
+            style={{ color: "var(--color-text-muted)", letterSpacing: "0.05em" }}
+          >
             Your Stake
           </p>
-          <p className="text-xl font-bold tabular-nums">
+          <p
+            className="text-xl font-bold tabular-nums"
+            style={{ fontFamily: "var(--font-mono)" }}
+          >
             {Number(staked).toFixed(4)}{" "}
-            <span className="text-sm font-normal text-[var(--color-text-muted)]">{symbol}</span>
+            <span
+              className="text-sm font-normal"
+              style={{ color: "var(--color-text-muted)", fontFamily: "var(--font-body)" }}
+            >
+              {symbol}
+            </span>
           </p>
         </div>
         <div
-          className="p-4 rounded-xl relative overflow-hidden"
+          className="p-4"
           style={{
-            background: "rgba(0,0,0,0.3)",
-            border: "1px solid var(--color-primary-border)",
+            background: "var(--color-surface-high)",
+            border: "1px solid var(--color-surface-border)",
+            borderRadius: "8px",
           }}
         >
-          {/* Subtle glow */}
-          <div
-            className="absolute inset-0 pointer-events-none"
+          <p
+            className="text-xs font-medium uppercase tracking-wider mb-1"
+            style={{ color: "var(--color-text-muted)", letterSpacing: "0.05em" }}
+          >
+            Claimable
+          </p>
+          <p
+            className="text-xl font-bold tabular-nums"
             style={{
-              background: "radial-gradient(ellipse at center, var(--color-primary-glow) 0%, transparent 70%)",
+              color: "var(--color-accent-green-text)",
+              fontFamily: "var(--font-mono)",
             }}
-          />
-          <div className="relative">
-            <p className="text-xs font-medium uppercase tracking-wider text-[var(--color-text-muted)] mb-1">
-              Claimable
-            </p>
-            <p className="text-xl font-bold tabular-nums" style={{ color: "var(--color-primary)" }}>
-              {Number(pending).toFixed(4)}{" "}
-              <span className="text-sm font-normal text-[var(--color-text-muted)]">RWD</span>
-            </p>
-            <button
-              onClick={handleClaim}
-              disabled={loading || Number(pending) === 0}
-              className="text-xs mt-2 font-medium transition-colors"
-              style={{
-                color: Number(pending) > 0 ? "var(--color-primary)" : "var(--color-text-muted)",
-              }}
+          >
+            {Number(pending).toFixed(4)}{" "}
+            <span
+              className="text-sm font-normal"
+              style={{ color: "var(--color-text-muted)", fontFamily: "var(--font-body)" }}
             >
-              Claim Rewards →
-            </button>
-          </div>
+              RWD
+            </span>
+          </p>
+          <button
+            onClick={handleClaim}
+            disabled={loading || Number(pending) === 0}
+            className="text-xs mt-2 font-medium transition-colors"
+            style={{
+              color: Number(pending) > 0 ? "var(--color-accent-green-text)" : "var(--color-text-muted)",
+            }}
+          >
+            Claim Rewards
+          </button>
         </div>
       </div>
 
       {/* Stake Input */}
       <div className="flex flex-col gap-2">
         <div className="flex justify-between items-center">
-          <label className="text-xs font-semibold uppercase tracking-wider text-[var(--color-text-muted)]">
+          <label
+            className="text-xs font-semibold uppercase tracking-wider"
+            style={{ color: "var(--color-text-muted)", letterSpacing: "0.05em" }}
+          >
             Stake
           </label>
-          <span className="text-xs text-[var(--color-text-muted)] tabular-nums">
+          <span
+            className="text-xs tabular-nums"
+            style={{ color: "var(--color-text-muted)", fontFamily: "var(--font-mono)" }}
+          >
             Balance: {Number(balance).toFixed(4)} {symbol}
           </span>
         </div>
@@ -277,7 +311,8 @@ export function PoolCard({ provider, pid, address, symbol, totalAllocPoint }: Po
             <button
               onClick={handleApprove}
               disabled={loading}
-              className="ghost-btn px-5 rounded-xl text-sm font-semibold whitespace-nowrap"
+              className="ghost-btn px-5 text-sm font-semibold whitespace-nowrap"
+              style={{ borderRadius: "8px" }}
             >
               Approve
             </button>
@@ -285,7 +320,8 @@ export function PoolCard({ provider, pid, address, symbol, totalAllocPoint }: Po
             <button
               onClick={handleStake}
               disabled={loading || !stakeAmount || Number(stakeAmount) <= 0}
-              className="neo-btn px-5 rounded-xl text-sm font-semibold whitespace-nowrap"
+              className="neo-btn px-5 text-sm font-semibold whitespace-nowrap"
+              style={{ borderRadius: "8px" }}
             >
               Stake
             </button>
@@ -295,7 +331,10 @@ export function PoolCard({ provider, pid, address, symbol, totalAllocPoint }: Po
 
       {/* Withdraw Input */}
       <div className="flex flex-col gap-2">
-        <label className="text-xs font-semibold uppercase tracking-wider text-[var(--color-text-muted)]">
+        <label
+          className="text-xs font-semibold uppercase tracking-wider"
+          style={{ color: "var(--color-text-muted)", letterSpacing: "0.05em" }}
+        >
           Withdraw
         </label>
         <div className="flex gap-2">
@@ -313,7 +352,8 @@ export function PoolCard({ provider, pid, address, symbol, totalAllocPoint }: Po
           <button
             onClick={handleWithdraw}
             disabled={loading || !withdrawAmount || Number(withdrawAmount) <= 0}
-            className="ghost-btn px-5 rounded-xl text-sm font-semibold whitespace-nowrap"
+            className="ghost-btn px-5 text-sm font-semibold whitespace-nowrap"
+            style={{ borderRadius: "8px" }}
           >
             Withdraw
           </button>
@@ -322,11 +362,12 @@ export function PoolCard({ provider, pid, address, symbol, totalAllocPoint }: Po
           <button
             onClick={handleEmergencyWithdraw}
             disabled={loading}
-            className="w-full mt-3 py-2 rounded-xl text-sm font-bold transition-all flex items-center justify-center gap-2 border"
-            style={{ 
-              backgroundColor: "rgba(239, 68, 68, 0.1)",
-              color: "var(--color-error)",
-              borderColor: "rgba(239, 68, 68, 0.3)"
+            className="w-full mt-3 py-2 text-sm font-bold transition-all flex items-center justify-center gap-2"
+            style={{
+              backgroundColor: "var(--color-accent-red)",
+              color: "var(--color-accent-red-text)",
+              border: "1px solid rgba(159, 47, 45, 0.2)",
+              borderRadius: "8px",
             }}
             title="Use this if normal withdraw fails. You will forfeit your pending rewards."
           >

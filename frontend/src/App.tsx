@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { BrowserRouter, Routes, Route, Link, NavLink, useLocation } from "react-router-dom";
 import { Toaster } from "sonner";
 import { BrowserProvider, formatEther } from 'ethers'
@@ -6,6 +6,34 @@ import { getProvider, getChefContract, getERC20Contract, REWARD_TOKEN_ADDRESS, P
 import { PoolCard } from './components/PoolCard'
 import { FaucetPage } from './components/FaucetPage'
 import { HistoryPage } from './components/HistoryPage'
+
+/** Scroll-entry observer hook — attaches IntersectionObserver to ref elements */
+function useScrollReveal() {
+  const refs = useRef<(HTMLElement | null)[]>([]);
+
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            entry.target.classList.add("visible");
+          }
+        });
+      },
+      { threshold: 0.1 }
+    );
+
+    refs.current.forEach((el) => {
+      if (el) observer.observe(el);
+    });
+
+    return () => observer.disconnect();
+  }, []);
+
+  return (index: number) => (el: HTMLElement | null) => {
+    refs.current[index] = el;
+  };
+}
 
 function Dashboard({
   provider,
@@ -18,87 +46,113 @@ function Dashboard({
   totalAllocPoint: number;
   rewardRate: string;
 }) {
+  const setRef = useScrollReveal();
+
   return (
-    <div className="flex flex-col gap-10">
+    <div className="flex flex-col gap-12">
       {/* Hero */}
-      <section className="glass-card p-8 md:p-10 rounded-3xl relative overflow-hidden">
-        <div
-          className="absolute top-[-40%] left-[-8%] w-[280px] h-[280px] rounded-full pointer-events-none"
-          style={{ background: "var(--color-primary-glow)", filter: "blur(100px)" }}
-        />
-        <div
-          className="absolute bottom-[-40%] right-[-8%] w-[280px] h-[280px] rounded-full pointer-events-none"
-          style={{ background: "rgba(109, 40, 217, 0.12)", filter: "blur(100px)" }}
-        />
+      <section
+        ref={setRef(0)}
+        className="scroll-entry glass-card p-10 md:p-14"
+      >
+        <h1
+          className="text-4xl md:text-5xl font-normal mb-4"
+          style={{
+            fontFamily: "var(--font-display)",
+            letterSpacing: "-0.03em",
+            lineHeight: "1.1",
+            color: "var(--color-text-primary)",
+          }}
+        >
+          Master DeFi Farming
+        </h1>
+        <p
+          className="text-lg max-w-2xl mb-10"
+          style={{ color: "var(--color-text-muted)" }}
+        >
+          Stake assets, earn RWD tokens, and watch your portfolio grow with
+          institutional-grade security.
+        </p>
 
-        <div className="relative z-10">
-          <h1
-            className="text-4xl md:text-5xl font-extrabold mb-3 tracking-tight"
-            style={{ fontFamily: "var(--font-display)", letterSpacing: "-0.02em" }}
+        <div className="flex flex-wrap gap-4">
+          <div
+            className="px-6 py-5 min-w-[180px]"
+            style={{
+              background: "var(--color-surface-high)",
+              border: "1px solid var(--color-surface-border)",
+              borderRadius: "8px",
+            }}
           >
-            Master DeFi Farming
-          </h1>
-          <p className="text-[var(--color-text-secondary)] text-lg max-w-2xl mb-8">
-            Stake assets, earn RWD tokens, and watch your portfolio grow with
-            institutional-grade security.
-          </p>
-
-          <div className="flex flex-wrap gap-4">
-            <div
-              className="px-6 py-5 rounded-2xl min-w-[180px]"
-              style={{
-                background: "rgba(0,0,0,0.4)",
-                border: "1px solid var(--color-surface-border)",
-              }}
+            <p
+              className="text-xs font-semibold uppercase tracking-wider mb-1"
+              style={{ color: "var(--color-text-muted)", letterSpacing: "0.05em" }}
             >
-              <p className="text-xs font-semibold uppercase tracking-wider text-[var(--color-text-muted)] mb-1">
-                Global Reward Rate
-              </p>
-              <p className="text-2xl font-bold tabular-nums" style={{ color: "var(--color-primary)" }}>
-                {rewardRate}{" "}
-                <span className="text-sm font-normal text-[var(--color-text-muted)]">
-                  RWD/sec
-                </span>
-              </p>
-            </div>
-            <div
-              className="px-6 py-5 rounded-2xl min-w-[140px]"
-              style={{
-                background: "rgba(0,0,0,0.4)",
-                border: "1px solid var(--color-surface-border)",
-              }}
+              Global Reward Rate
+            </p>
+            <p
+              className="text-2xl font-bold tabular-nums"
+              style={{ color: "var(--color-text-primary)", fontFamily: "var(--font-mono)" }}
             >
-              <p className="text-xs font-semibold uppercase tracking-wider text-[var(--color-text-muted)] mb-1">
-                Active Pools
-              </p>
-              <p className="text-2xl font-bold tabular-nums">{POOLS.length}</p>
-            </div>
+              {rewardRate}{" "}
+              <span
+                className="text-sm font-normal"
+                style={{ color: "var(--color-text-muted)", fontFamily: "var(--font-body)" }}
+              >
+                RWD/sec
+              </span>
+            </p>
+          </div>
+          <div
+            className="px-6 py-5 min-w-[140px]"
+            style={{
+              background: "var(--color-surface-high)",
+              border: "1px solid var(--color-surface-border)",
+              borderRadius: "8px",
+            }}
+          >
+            <p
+              className="text-xs font-semibold uppercase tracking-wider mb-1"
+              style={{ color: "var(--color-text-muted)", letterSpacing: "0.05em" }}
+            >
+              Active Pools
+            </p>
+            <p
+              className="text-2xl font-bold tabular-nums"
+              style={{ fontFamily: "var(--font-mono)" }}
+            >
+              {POOLS.length}
+            </p>
           </div>
         </div>
       </section>
 
       {/* Active Pools */}
-      <section>
+      <section ref={setRef(1)} className="scroll-entry stagger-1">
         <h2
-          className="text-2xl font-bold mb-6 flex items-center gap-3"
-          style={{ fontFamily: "var(--font-display)" }}
+          className="text-2xl mb-6 flex items-center gap-3"
+          style={{
+            fontFamily: "var(--font-display)",
+            fontWeight: 400,
+            color: "var(--color-text-primary)",
+          }}
         >
           <span
-            className="w-1.5 h-7 rounded-full block"
-            style={{ background: "var(--color-primary)" }}
+            className="w-1 h-6 block"
+            style={{ background: "var(--color-text-primary)", borderRadius: "2px" }}
           />
           Active Pools
         </h2>
 
         {!account ? (
           <div
-            className="text-center py-20 rounded-2xl border border-dashed"
+            className="text-center py-20"
             style={{
-              borderColor: "var(--color-surface-border)",
-              background: "rgba(0,0,0,0.15)",
+              borderRadius: "12px",
+              border: "1px dashed var(--color-surface-border)",
+              background: "var(--color-surface)",
             }}
           >
-            <p className="text-[var(--color-text-secondary)] text-lg">
+            <p style={{ color: "var(--color-text-muted)", fontSize: "1.125rem" }}>
               Connect your wallet to view and interact with pools.
             </p>
           </div>
@@ -218,25 +272,35 @@ function App() {
 
   return (
     <div className="min-h-screen flex flex-col">
-      <Toaster theme="dark" position="bottom-right" />
+      <Toaster theme="light" position="bottom-right" />
       {/* ── Navbar ── */}
       <nav
-        className="glass-card mx-4 mt-4 px-6 py-3.5 flex justify-between items-center rounded-2xl sticky top-4 z-50"
+        className="mx-4 mt-4 px-6 py-3.5 flex justify-between items-center sticky top-4 z-50"
+        style={{
+          background: "rgba(247, 246, 243, 0.85)",
+          backdropFilter: "blur(12px)",
+          border: "1px solid var(--color-surface-border)",
+          borderRadius: "12px",
+        }}
       >
         <div className="flex items-center gap-6">
           {/* Brand */}
           <NavLink to="/" className="flex items-center gap-2 shrink-0">
             <div
-              className="w-8 h-8 rounded-full"
+              className="w-7 h-7"
               style={{
-                background: "linear-gradient(135deg, var(--color-primary), var(--color-primary-dim))",
+                background: "var(--color-text-primary)",
+                borderRadius: "6px",
               }}
             />
             <h1
-              className="text-xl font-bold tracking-tight text-[var(--color-text-primary)]"
-              style={{ fontFamily: "var(--font-display)" }}
+              className="text-lg font-bold tracking-tight"
+              style={{
+                fontFamily: "var(--font-body)",
+                color: "var(--color-text-primary)",
+              }}
             >
-              Beginner<span style={{ color: "var(--color-primary)" }}>Chef</span>
+              Beginner<span style={{ color: "var(--color-text-muted)" }}>Chef</span>
             </h1>
           </NavLink>
 
@@ -262,22 +326,22 @@ function App() {
           {/* Network badge */}
           {isWrongNetwork ? (
             <span
-              className="text-xs font-semibold px-3 py-1.5 rounded-full"
+              className="pill-badge"
               style={{
                 color: "var(--color-error)",
-                background: "rgba(239, 68, 68, 0.12)",
-                border: "1px solid rgba(239, 68, 68, 0.25)",
+                background: "var(--color-error-bg)",
               }}
             >
               Wrong Network
             </span>
           ) : (
             <span
-              className="text-xs font-medium px-3 py-1.5 rounded-full hidden sm:inline-flex items-center gap-1.5"
+              className="text-xs font-medium px-3 py-1.5 hidden sm:inline-flex items-center gap-1.5"
               style={{
-                color: "var(--color-text-secondary)",
-                background: "rgba(255,255,255,0.04)",
+                color: "var(--color-text-muted)",
+                background: "var(--color-surface)",
                 border: "1px solid var(--color-surface-border)",
+                borderRadius: "6px",
               }}
             >
               <span
@@ -291,23 +355,36 @@ function App() {
           {/* Wallet */}
           {account ? (
             <div className="flex items-center gap-2">
-              <span 
-                className="text-xs font-bold px-3 py-1.5 rounded-xl hidden sm:inline-block"
+              <span
+                className="text-xs font-bold px-3 py-1.5 hidden sm:inline-block"
                 style={{
-                  color: "var(--color-primary)",
-                  background: "var(--color-primary-glow)",
-                  border: "1px solid var(--color-primary-border)"
+                  color: "var(--color-accent-green-text)",
+                  background: "var(--color-accent-green)",
+                  borderRadius: "6px",
+                  fontFamily: "var(--font-mono)",
                 }}
               >
                 {Number(rwdBalance).toFixed(2)} RWD
               </span>
               <button
                 onClick={disconnectWallet}
-                className="px-3.5 py-1.5 rounded-xl font-mono text-xs transition-colors hover:bg-red-500/10 hover:text-red-400 hover:border-red-500/30"
+                className="px-3.5 py-1.5 font-mono text-xs transition-colors"
                 style={{
-                  background: "rgba(0,0,0,0.4)",
+                  background: "var(--color-surface)",
                   border: "1px solid var(--color-surface-border)",
-                  color: "var(--color-text-secondary)",
+                  borderRadius: "6px",
+                  color: "var(--color-text-muted)",
+                  fontFamily: "var(--font-mono)",
+                }}
+                onMouseEnter={(e) => {
+                  (e.currentTarget as HTMLButtonElement).style.borderColor = "#9F2F2D";
+                  (e.currentTarget as HTMLButtonElement).style.color = "#9F2F2D";
+                  (e.currentTarget as HTMLButtonElement).style.background = "var(--color-error-bg)";
+                }}
+                onMouseLeave={(e) => {
+                  (e.currentTarget as HTMLButtonElement).style.borderColor = "var(--color-surface-border)";
+                  (e.currentTarget as HTMLButtonElement).style.color = "var(--color-text-muted)";
+                  (e.currentTarget as HTMLButtonElement).style.background = "var(--color-surface)";
                 }}
               >
                 {account.slice(0, 6)}...{account.slice(-4)}
@@ -316,7 +393,8 @@ function App() {
           ) : (
             <button
               onClick={connectWallet}
-              className="neo-btn px-5 py-2 rounded-full text-sm font-semibold"
+              className="neo-btn px-5 py-2 text-sm font-semibold"
+              style={{ borderRadius: "6px" }}
             >
               Connect Wallet
             </button>
@@ -341,7 +419,7 @@ function App() {
       </div>
 
       {/* ── Page Content ── */}
-      <main className="max-w-[1200px] w-full mx-auto px-6 py-8 flex-1">
+      <main className="max-w-[1200px] w-full mx-auto px-6 py-10 flex-1">
         <Routes>
           <Route
             path="/"
@@ -367,12 +445,12 @@ function App() {
           color: "var(--color-text-muted)",
         }}
       >
-        <span>© {new Date().getFullYear()} BeginnerChef Protocol</span>
+        <span>&copy; {new Date().getFullYear()} BeginnerChef Protocol</span>
         <div className="flex gap-4">
-          <span className="hover:text-[var(--color-text-secondary)] cursor-pointer transition-colors">
+          <span className="hover:text-[var(--color-text-primary)] cursor-pointer transition-colors">
             Docs
           </span>
-          <span className="hover:text-[var(--color-text-secondary)] cursor-pointer transition-colors">
+          <span className="hover:text-[var(--color-text-primary)] cursor-pointer transition-colors">
             Security
           </span>
         </div>

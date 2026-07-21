@@ -11,7 +11,8 @@ interface TokenConfig {
   symbol: string;
   label: string;
   description: string;
-  accentColor: string;
+  accentBg: string;
+  accentText: string;
 }
 
 function buildTokenList(): TokenConfig[] {
@@ -20,7 +21,8 @@ function buildTokenList(): TokenConfig[] {
     symbol: pool.symbol,
     label: `Stake Token ${pool.pid + 1}`,
     description: `${pool.symbol} per request`,
-    accentColor: pool.pid === 0 ? "#8b5cf6" : "#f59e0b",
+    accentBg: pool.pid === 0 ? "var(--color-accent-blue)" : "var(--color-accent-yellow)",
+    accentText: pool.pid === 0 ? "var(--color-accent-blue-text)" : "var(--color-accent-yellow-text)",
   }));
 
   tokens.push({
@@ -28,7 +30,8 @@ function buildTokenList(): TokenConfig[] {
     symbol: "RWD",
     label: "Reward Token",
     description: "RWD per request",
-    accentColor: "#10b981",
+    accentBg: "var(--color-accent-green)",
+    accentText: "var(--color-accent-green-text)",
   });
 
   return tokens;
@@ -71,14 +74,19 @@ export function FaucetPage({ provider }: FaucetPageProps) {
   return (
     <div>
       {/* Page Header */}
-      <div className="mb-8">
+      <div className="mb-10">
         <h1
-          className="text-4xl font-extrabold mb-2"
-          style={{ fontFamily: "var(--font-display)" }}
+          className="text-4xl mb-3"
+          style={{
+            fontFamily: "var(--font-display)",
+            fontWeight: 400,
+            letterSpacing: "-0.03em",
+            lineHeight: "1.1",
+          }}
         >
           Test Tokens
         </h1>
-        <p className="text-[var(--color-text-secondary)] text-lg max-w-xl">
+        <p className="text-lg max-w-xl" style={{ color: "var(--color-text-muted)" }}>
           Mint test assets to interact with the BeginnerChef protocol on the
           Sepolia network.
         </p>
@@ -86,9 +94,15 @@ export function FaucetPage({ provider }: FaucetPageProps) {
 
       {/* Token Cards */}
       {!provider ? (
-        <div className="text-center py-20 rounded-2xl border border-dashed"
-          style={{ borderColor: "var(--color-surface-border)", background: "rgba(0,0,0,0.2)" }}>
-          <p className="text-[var(--color-text-secondary)] text-lg">
+        <div
+          className="text-center py-20"
+          style={{
+            borderRadius: "12px",
+            border: "1px dashed var(--color-surface-border)",
+            background: "var(--color-surface)",
+          }}
+        >
+          <p style={{ color: "var(--color-text-muted)", fontSize: "1.125rem" }}>
             Connect your wallet to mint test tokens.
           </p>
         </div>
@@ -97,31 +111,41 @@ export function FaucetPage({ provider }: FaucetPageProps) {
           {tokens.map((token) => (
             <div
               key={token.address}
-              className="relative flex flex-col gap-4 p-6 rounded-2xl transition-all duration-200"
+              className="relative flex flex-col gap-4 p-6 transition-all duration-200"
               style={{
                 background: "var(--color-surface)",
-                border: "1px dashed var(--color-primary-border)",
+                border: "1px solid var(--color-surface-border)",
+                borderRadius: "12px",
               }}
               onMouseEnter={(e) => {
-                (e.currentTarget as HTMLDivElement).style.borderColor = token.accentColor;
-                (e.currentTarget as HTMLDivElement).style.boxShadow = `0 0 25px ${token.accentColor}15`;
+                (e.currentTarget as HTMLDivElement).style.boxShadow = "0 2px 8px rgba(0,0,0,0.04)";
+                (e.currentTarget as HTMLDivElement).style.borderColor = "#DCDCDC";
               }}
               onMouseLeave={(e) => {
-                (e.currentTarget as HTMLDivElement).style.borderColor = "var(--color-primary-border)";
                 (e.currentTarget as HTMLDivElement).style.boxShadow = "none";
+                (e.currentTarget as HTMLDivElement).style.borderColor = "var(--color-surface-border)";
               }}
             >
               {/* Token Badge */}
               <div className="flex items-center gap-3">
                 <div
-                  className="w-10 h-10 rounded-full flex items-center justify-center text-sm font-bold"
-                  style={{ background: `${token.accentColor}25`, color: token.accentColor }}
+                  className="w-10 h-10 flex items-center justify-center text-sm font-bold"
+                  style={{
+                    background: token.accentBg,
+                    color: token.accentText,
+                    borderRadius: "8px",
+                  }}
                 >
                   {token.symbol.substring(0, 3)}
                 </div>
                 <div>
-                  <h3 className="font-semibold text-[var(--color-text-primary)]">{token.label}</h3>
-                  <p className="text-xs text-[var(--color-text-muted)]">
+                  <h3
+                    className="font-semibold"
+                    style={{ color: "var(--color-text-primary)" }}
+                  >
+                    {token.label}
+                  </h3>
+                  <p className="text-xs" style={{ color: "var(--color-text-muted)" }}>
                     {MINT_AMOUNT} {token.description}
                   </p>
                 </div>
@@ -131,17 +155,22 @@ export function FaucetPage({ provider }: FaucetPageProps) {
               <button
                 onClick={() => mintTokens(token)}
                 disabled={loadingToken !== null}
-                className="neo-btn px-4 py-2.5 rounded-xl text-sm font-semibold w-full"
-                style={
-                  loadingToken === token.address
-                    ? { opacity: 0.7 }
-                    : {}
-                }
+                className="neo-btn px-4 py-2.5 text-sm font-semibold w-full"
+                style={{
+                  borderRadius: "8px",
+                  ...(loadingToken === token.address ? { opacity: 0.7 } : {}),
+                }}
               >
                 {loadingToken === token.address ? (
                   <span className="flex items-center justify-center gap-2">
-                    <span className="inline-block w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                    Minting…
+                    <span
+                      className="inline-block w-4 h-4 border-2 rounded-full animate-spin"
+                      style={{
+                        borderColor: "rgba(255,255,255,0.3)",
+                        borderTopColor: "#fff",
+                      }}
+                    />
+                    Minting...
                   </span>
                 ) : (
                   "Mint"

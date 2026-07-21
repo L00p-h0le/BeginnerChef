@@ -16,9 +16,17 @@ interface TxEvent {
   timestamp?: number;
 }
 
-const EVENT_ICONS: Record<string, { icon: string; color: string }> = {
-  Deposit: { icon: "↓", color: "var(--color-success)" },
-  Withdraw: { icon: "↑", color: "var(--color-warning)" },
+const EVENT_STYLES: Record<string, { icon: string; bg: string; color: string }> = {
+  Deposit: {
+    icon: "\u2193",
+    bg: "var(--color-accent-green)",
+    color: "var(--color-accent-green-text)",
+  },
+  Withdraw: {
+    icon: "\u2191",
+    bg: "var(--color-accent-yellow)",
+    color: "var(--color-accent-yellow-text)",
+  },
 };
 
 function getPoolSymbol(pid: number): string {
@@ -27,7 +35,7 @@ function getPoolSymbol(pid: number): string {
 }
 
 function shortenHash(hash: string): string {
-  return `${hash.substring(0, 6)}…${hash.substring(hash.length - 4)}`;
+  return `${hash.substring(0, 6)}\u2026${hash.substring(hash.length - 4)}`;
 }
 
 export function HistoryPage({ provider }: HistoryPageProps) {
@@ -122,15 +130,20 @@ export function HistoryPage({ provider }: HistoryPageProps) {
   return (
     <div>
       {/* Page Header */}
-      <div className="mb-8 flex items-center justify-between">
+      <div className="mb-10 flex items-center justify-between">
         <div>
           <h1
-            className="text-4xl font-extrabold mb-2"
-            style={{ fontFamily: "var(--font-display)" }}
+            className="text-4xl mb-3"
+            style={{
+              fontFamily: "var(--font-display)",
+              fontWeight: 400,
+              letterSpacing: "-0.03em",
+              lineHeight: "1.1",
+            }}
           >
             Transaction History
           </h1>
-          <p className="text-[var(--color-text-secondary)] text-lg max-w-xl">
+          <p className="text-lg max-w-xl" style={{ color: "var(--color-text-muted)" }}>
             Review your on-chain staking activity.
           </p>
         </div>
@@ -138,9 +151,10 @@ export function HistoryPage({ provider }: HistoryPageProps) {
           <button
             onClick={loadEvents}
             disabled={loading}
-            className="ghost-btn px-4 py-2 rounded-xl text-sm"
+            className="ghost-btn px-4 py-2 text-sm"
+            style={{ borderRadius: "8px" }}
           >
-            {loading ? "Refreshing…" : "Refresh"}
+            {loading ? "Refreshing..." : "Refresh"}
           </button>
         )}
       </div>
@@ -148,13 +162,14 @@ export function HistoryPage({ provider }: HistoryPageProps) {
       {/* Content */}
       {!provider ? (
         <div
-          className="text-center py-20 rounded-2xl border border-dashed"
+          className="text-center py-20"
           style={{
-            borderColor: "var(--color-surface-border)",
-            background: "rgba(0,0,0,0.2)",
+            borderRadius: "12px",
+            border: "1px dashed var(--color-surface-border)",
+            background: "var(--color-surface)",
           }}
         >
-          <p className="text-[var(--color-text-secondary)] text-lg">
+          <p style={{ color: "var(--color-text-muted)", fontSize: "1.125rem" }}>
             Connect your wallet to view transaction history.
           </p>
         </div>
@@ -163,46 +178,62 @@ export function HistoryPage({ provider }: HistoryPageProps) {
           {[...Array(5)].map((_, i) => (
             <div
               key={i}
-              className="h-16 rounded-xl animate-pulse"
-              style={{ background: "var(--color-surface)" }}
+              className="h-16 animate-pulse"
+              style={{
+                background: "var(--color-surface-high)",
+                borderRadius: "8px",
+              }}
             />
           ))}
         </div>
       ) : error ? (
         <div
-          className="text-center py-12 rounded-2xl"
-          style={{ background: "var(--color-surface)" }}
+          className="text-center py-12"
+          style={{
+            background: "var(--color-surface)",
+            borderRadius: "12px",
+            border: "1px solid var(--color-surface-border)",
+          }}
         >
-          <p className="text-[var(--color-error)]">{error}</p>
+          <p style={{ color: "var(--color-error)" }}>{error}</p>
           <button
             onClick={loadEvents}
-            className="ghost-btn px-4 py-2 rounded-lg text-sm mt-4"
+            className="ghost-btn px-4 py-2 text-sm mt-4"
+            style={{ borderRadius: "8px" }}
           >
             Retry
           </button>
         </div>
       ) : events.length === 0 ? (
         <div
-          className="text-center py-20 rounded-2xl"
-          style={{ background: "var(--color-surface)" }}
+          className="text-center py-20"
+          style={{
+            background: "var(--color-surface)",
+            borderRadius: "12px",
+            border: "1px solid var(--color-surface-border)",
+          }}
         >
-          <p className="text-[var(--color-text-muted)] text-lg mb-1">
+          <p className="text-lg mb-1" style={{ color: "var(--color-text-muted)" }}>
             No transactions yet
           </p>
-          <p className="text-[var(--color-text-muted)] text-sm">
+          <p className="text-sm" style={{ color: "var(--color-text-muted)" }}>
             Stake or withdraw tokens to see activity here.
           </p>
         </div>
       ) : (
         <div className="flex flex-col gap-2">
           {events.map((ev, idx) => {
-            const meta = EVENT_ICONS[ev.type];
+            const meta = EVENT_STYLES[ev.type];
             const isDeposit = ev.type === "Deposit";
             return (
               <div
                 key={`${ev.txHash}-${idx}`}
-                className="flex items-center gap-4 px-5 py-4 rounded-xl transition-colors"
-                style={{ background: "var(--color-surface)" }}
+                className="flex items-center gap-4 px-5 py-4 transition-colors"
+                style={{
+                  background: "var(--color-surface)",
+                  borderRadius: "8px",
+                  border: "1px solid var(--color-surface-border)",
+                }}
                 onMouseEnter={(e) => {
                   (e.currentTarget as HTMLDivElement).style.background = "var(--color-surface-high)";
                 }}
@@ -212,10 +243,11 @@ export function HistoryPage({ provider }: HistoryPageProps) {
               >
                 {/* Icon */}
                 <div
-                  className="w-9 h-9 rounded-full flex items-center justify-center text-base font-bold shrink-0"
+                  className="w-9 h-9 flex items-center justify-center text-base font-bold shrink-0"
                   style={{
-                    background: `${meta.color}18`,
+                    background: meta.bg,
                     color: meta.color,
+                    borderRadius: "8px",
                   }}
                 >
                   {meta.icon}
@@ -224,11 +256,14 @@ export function HistoryPage({ provider }: HistoryPageProps) {
                 {/* Details */}
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2">
-                    <span className="font-semibold text-sm text-[var(--color-text-primary)]">
+                    <span
+                      className="font-semibold text-sm"
+                      style={{ color: "var(--color-text-primary)" }}
+                    >
                       {ev.type === "Deposit" ? "Staked" : "Withdrew"} {getPoolSymbol(ev.pid)}
                     </span>
                     {ev.timestamp && (
-                      <span className="text-xs text-[var(--color-text-muted)]">
+                      <span className="text-xs" style={{ color: "var(--color-text-muted)" }}>
                         {formatTime(ev.timestamp)}
                       </span>
                     )}
@@ -237,7 +272,17 @@ export function HistoryPage({ provider }: HistoryPageProps) {
                     href={`https://sepolia.etherscan.io/tx/${ev.txHash}`}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="text-xs text-[var(--color-text-muted)] hover:text-[var(--color-primary)] transition-colors font-mono"
+                    className="text-xs transition-colors"
+                    style={{
+                      color: "var(--color-text-muted)",
+                      fontFamily: "var(--font-mono)",
+                    }}
+                    onMouseEnter={(e) => {
+                      (e.currentTarget as HTMLAnchorElement).style.color = "var(--color-text-primary)";
+                    }}
+                    onMouseLeave={(e) => {
+                      (e.currentTarget as HTMLAnchorElement).style.color = "var(--color-text-muted)";
+                    }}
                   >
                     {shortenHash(ev.txHash)}
                   </a>
@@ -247,7 +292,12 @@ export function HistoryPage({ provider }: HistoryPageProps) {
                 <div className="text-right shrink-0">
                   <span
                     className="font-semibold text-sm tabular-nums"
-                    style={{ color: isDeposit ? "var(--color-success)" : "var(--color-warning)" }}
+                    style={{
+                      color: isDeposit
+                        ? "var(--color-accent-green-text)"
+                        : "var(--color-accent-yellow-text)",
+                      fontFamily: "var(--font-mono)",
+                    }}
                   >
                     {isDeposit ? "+" : "-"}
                     {Number(ev.amount).toFixed(2)} {getPoolSymbol(ev.pid)}
