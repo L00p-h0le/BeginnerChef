@@ -174,7 +174,6 @@ A handler-based invariant suite drives random sequences of `deposit`/`withdraw`/
 - **Accumulator monotonicity** — `accRewardPerToken` never decreases for any pool
 - **Allocation correctness** — over periods with no `set()` calls, each pool's accrued reward share matches its `allocPoint` ratio within rounding tolerance
 
-**A genuine bug was caught here, not just simulated:** the first invariant run passed 3/3 with a misleadingly clean result — closer inspection of the per-selector call/revert table showed `addPool` reverting on **100% of its 21,310 calls**, due to an `onlyOwner` mismatch between the test contract (which deployed and owned `BeginnerChef`) and the `Handler` contract (which was actually making the calls). Because no pool was ever successfully created, every other handler function no-op'd immediately, and all three invariants were passing vacuously against an untouched contract. Fixing the ownership wiring and rerunning produced 128,000 real calls with 0 reverts and all invariants genuinely holding — a concrete reminder that a green test suite is not proof of anything until you've confirmed the tests actually exercised the intended code path.
 
 ### Security-focused behavioral tests (4 tests)
 Adversarial scenarios proven with dedicated mock tokens rather than just reasoned about:
