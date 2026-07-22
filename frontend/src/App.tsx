@@ -1,13 +1,21 @@
 import { useState, useEffect, useRef } from "react";
-import { BrowserRouter, Routes, Route, Link, NavLink, useLocation } from "react-router-dom";
+import { BrowserRouter, Routes, Route, NavLink } from "react-router-dom";
 import { Toaster } from "sonner";
-import { BrowserProvider, formatEther } from 'ethers'
-import { getProvider, getChefContract, getERC20Contract, REWARD_TOKEN_ADDRESS, POOLS, EXPECTED_CHAIN_ID } from './utils/contracts'
-import { PoolCard } from './components/PoolCard'
-import { FaucetPage } from './components/FaucetPage'
-import { HistoryPage } from './components/HistoryPage'
+import { BrowserProvider, formatEther } from "ethers";
+import {
+  getProvider,
+  getChefContract,
+  getERC20Contract,
+  REWARD_TOKEN_ADDRESS,
+  POOLS,
+  EXPECTED_CHAIN_ID,
+} from "./utils/contracts";
+import { PoolCard } from "./components/PoolCard";
+import { FaucetPage } from "./components/FaucetPage";
+import { HistoryPage } from "./components/HistoryPage";
+import { LandingPage } from "./components/LandingPage";
 
-/** Scroll-entry observer hook — attaches IntersectionObserver to ref elements */
+/** Scroll-entry observer hook */
 function useScrollReveal() {
   const refs = useRef<(HTMLElement | null)[]>([]);
 
@@ -35,84 +43,92 @@ function useScrollReveal() {
   };
 }
 
+/* ── Dashboard ── */
+
 function Dashboard({
   provider,
   account,
+  connectWallet,
   totalAllocPoint,
   rewardRate,
 }: {
   provider: BrowserProvider | null;
   account: string;
+  connectWallet: () => void;
   totalAllocPoint: number;
   rewardRate: string;
 }) {
   const setRef = useScrollReveal();
 
   return (
-    <div className="flex flex-col gap-12">
-      {/* Hero */}
-      <section
+    <div>
+      {/* Header & Stats */}
+      <div
         ref={setRef(0)}
-        className="scroll-entry glass-card p-10 md:p-14"
+        className="scroll-entry mb-10 flex flex-col md:flex-row md:items-start justify-between gap-6"
       >
-        <h1
-          className="text-4xl md:text-5xl font-normal mb-4"
-          style={{
-            fontFamily: "var(--font-display)",
-            letterSpacing: "-0.03em",
-            lineHeight: "1.1",
-            color: "var(--color-text-primary)",
-          }}
-        >
-          Master DeFi Farming
-        </h1>
-        <p
-          className="text-lg max-w-2xl mb-10"
-          style={{ color: "var(--color-text-muted)" }}
-        >
-          Stake assets, earn RWD tokens, and watch your portfolio grow with
-          institutional-grade security.
-        </p>
+        <div>
+          <h1 className="scanline-title text-5xl md:text-6xl mb-4">
+            Active Pools
+          </h1>
+          <p
+            className="text-lg max-w-xl"
+            style={{ color: "var(--color-text-muted)" }}
+          >
+            Deposit LP tokens to earn RWD rewards in real-time.
+          </p>
+        </div>
 
-        <div className="flex flex-wrap gap-4">
+        <div className="flex flex-wrap gap-4 shrink-0">
           <div
-            className="px-6 py-5 min-w-[180px]"
+            className="px-6 py-5"
             style={{
-              background: "var(--color-surface-high)",
+              background: "var(--color-surface)",
               border: "1px solid var(--color-surface-border)",
               borderRadius: "8px",
+              minWidth: "180px",
             }}
           >
             <p
               className="text-xs font-semibold uppercase tracking-wider mb-1"
-              style={{ color: "var(--color-text-muted)", letterSpacing: "0.05em" }}
+              style={{
+                color: "var(--color-text-muted)",
+                letterSpacing: "0.05em",
+              }}
             >
-              Global Reward Rate
+              Reward Rate
             </p>
             <p
               className="text-2xl font-bold tabular-nums"
-              style={{ color: "var(--color-text-primary)", fontFamily: "var(--font-mono)" }}
+              style={{ fontFamily: "var(--font-mono)" }}
             >
               {rewardRate}{" "}
               <span
                 className="text-sm font-normal"
-                style={{ color: "var(--color-text-muted)", fontFamily: "var(--font-body)" }}
+                style={{
+                  color: "var(--color-text-muted)",
+                  fontFamily: "var(--font-body)",
+                }}
               >
                 RWD/sec
               </span>
             </p>
           </div>
           <div
-            className="px-6 py-5 min-w-[140px]"
+            className="px-6 py-5"
             style={{
-              background: "var(--color-surface-high)",
+              background: "var(--color-surface)",
               border: "1px solid var(--color-surface-border)",
               borderRadius: "8px",
+              minWidth: "140px",
             }}
           >
             <p
               className="text-xs font-semibold uppercase tracking-wider mb-1"
-              style={{ color: "var(--color-text-muted)", letterSpacing: "0.05em" }}
+              style={{
+                color: "var(--color-text-muted)",
+                letterSpacing: "0.05em",
+              }}
             >
               Active Pools
             </p>
@@ -124,25 +140,10 @@ function Dashboard({
             </p>
           </div>
         </div>
-      </section>
+      </div>
 
-      {/* Active Pools */}
+      {/* Pools Grid */}
       <section ref={setRef(1)} className="scroll-entry stagger-1">
-        <h2
-          className="text-2xl mb-6 flex items-center gap-3"
-          style={{
-            fontFamily: "var(--font-display)",
-            fontWeight: 400,
-            color: "var(--color-text-primary)",
-          }}
-        >
-          <span
-            className="w-1 h-6 block"
-            style={{ background: "var(--color-text-primary)", borderRadius: "2px" }}
-          />
-          Active Pools
-        </h2>
-
         {!account ? (
           <div
             className="text-center py-20"
@@ -152,9 +153,18 @@ function Dashboard({
               background: "var(--color-surface)",
             }}
           >
-            <p style={{ color: "var(--color-text-muted)", fontSize: "1.125rem" }}>
+            <p
+              style={{ color: "var(--color-text-muted)", fontSize: "1.125rem" }}
+            >
               Connect your wallet to view and interact with pools.
             </p>
+            <button
+              onClick={connectWallet}
+              className="neo-btn px-7 py-3 text-sm font-semibold mt-6"
+              style={{ borderRadius: "6px" }}
+            >
+              Connect Wallet
+            </button>
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -175,104 +185,113 @@ function Dashboard({
   );
 }
 
+/* ── Navigation ── */
+
 const NAV_ITEMS = [
-  { to: "/", label: "Dashboard" },
+  { to: "/dashboard", label: "Dashboard" },
   { to: "/history", label: "History" },
   { to: "/faucet", label: "Faucet" },
 ];
 
+/* ── App Shell ── */
+
 function App() {
-  const [provider, setProvider] = useState<BrowserProvider | null>(null)
-  const [account, setAccount] = useState<string>('')
-  const [isWrongNetwork, setIsWrongNetwork] = useState(false)
-  const [totalAllocPoint, setTotalAllocPoint] = useState<number>(0)
-  const [rewardRate, setRewardRate] = useState<string>("0")
-  const [rwdBalance, setRwdBalance] = useState<string>("0")
+  const [provider, setProvider] = useState<BrowserProvider | null>(null);
+  const [account, setAccount] = useState<string>("");
+  const [isWrongNetwork, setIsWrongNetwork] = useState(false);
+  const [totalAllocPoint, setTotalAllocPoint] = useState<number>(0);
+  const [rewardRate, setRewardRate] = useState<string>("0");
+  const [rwdBalance, setRwdBalance] = useState<string>("0");
 
   const connectWallet = async () => {
-    const prov = getProvider()
+    const prov = getProvider();
     if (!prov) {
-      alert("Please install MetaMask or another Web3 wallet!")
-      return
+      alert("Please install MetaMask or another Web3 wallet!");
+      return;
     }
     try {
-      const accounts = await prov.send("eth_requestAccounts", [])
-      const network = await prov.getNetwork()
+      const accounts = await prov.send("eth_requestAccounts", []);
+      const network = await prov.getNetwork();
 
       if (Number(network.chainId) !== EXPECTED_CHAIN_ID) {
-        setIsWrongNetwork(true)
+        setIsWrongNetwork(true);
         try {
-          await prov.send("wallet_switchEthereumChain", [{ chainId: `0x${EXPECTED_CHAIN_ID.toString(16)}` }])
-          setIsWrongNetwork(false)
+          await prov.send("wallet_switchEthereumChain", [
+            { chainId: `0x${EXPECTED_CHAIN_ID.toString(16)}` },
+          ]);
+          setIsWrongNetwork(false);
         } catch (switchError) {
-          console.error(switchError)
+          console.error(switchError);
         }
       }
 
-      setAccount(accounts[0])
-      setProvider(prov)
+      setAccount(accounts[0]);
+      setProvider(prov);
     } catch (err) {
-      console.error(err)
+      console.error(err);
     }
-  }
+  };
 
   const disconnectWallet = () => {
-    setProvider(null)
-    setAccount('')
-    setTotalAllocPoint(0)
-    setRewardRate("0")
-    setRwdBalance("0")
-  }
+    setProvider(null);
+    setAccount("");
+    setTotalAllocPoint(0);
+    setRewardRate("0");
+    setRwdBalance("0");
+  };
 
   const loadGlobalData = async () => {
-    if (!provider) return
+    if (!provider) return;
     try {
-      const chef = await getChefContract(provider)
-      const alloc = await chef.totalAllocPoint()
-      setTotalAllocPoint(Number(alloc))
+      const chef = await getChefContract(provider);
+      const alloc = await chef.totalAllocPoint();
+      setTotalAllocPoint(Number(alloc));
 
-      const rate = await chef.rewardPerSecond()
-      setRewardRate(formatEther(rate))
+      const rate = await chef.rewardPerSecond();
+      setRewardRate(formatEther(rate));
 
       try {
-        const signer = await provider.getSigner()
-        const userAddr = await signer.getAddress()
-        const rwdToken = await getERC20Contract(REWARD_TOKEN_ADDRESS, provider)
-        const bal = await rwdToken.balanceOf(userAddr)
-        setRwdBalance(formatEther(bal))
+        const signer = await provider.getSigner();
+        const userAddr = await signer.getAddress();
+        const rwdToken = await getERC20Contract(
+          REWARD_TOKEN_ADDRESS,
+          provider
+        );
+        const bal = await rwdToken.balanceOf(userAddr);
+        setRwdBalance(formatEther(bal));
       } catch (e) {
-        console.error("Error fetching RWD balance", e)
+        console.error("Error fetching RWD balance", e);
       }
     } catch (err) {
-      console.error(err)
+      console.error(err);
     }
-  }
+  };
 
   useEffect(() => {
     if (provider) {
-      loadGlobalData()
-      const interval = setInterval(loadGlobalData, 5000)
-      return () => clearInterval(interval)
+      loadGlobalData();
+      const interval = setInterval(loadGlobalData, 5000);
+      return () => clearInterval(interval);
     }
-  }, [provider])
+  }, [provider]);
 
   useEffect(() => {
-    // Auto-connect if already authorized
     const checkConnection = async () => {
-      const prov = getProvider()
+      const prov = getProvider();
       if (prov) {
-        const accounts = await prov.listAccounts()
+        const accounts = await prov.listAccounts();
         if (accounts.length > 0) {
-          connectWallet()
+          connectWallet();
         }
       }
-    }
-    checkConnection()
-  }, [])
+    };
+    checkConnection();
+  }, []);
 
   return (
     <div className="min-h-screen flex flex-col">
       <Toaster theme="light" position="bottom-right" />
+
       {/* ── Navbar ── */}
       <nav
         className="mx-4 mt-4 px-6 py-3.5 flex justify-between items-center sticky top-4 z-50"
@@ -284,7 +303,6 @@ function App() {
         }}
       >
         <div className="flex items-center gap-6">
-          {/* Brand */}
           <NavLink to="/" className="flex items-center gap-2 shrink-0">
             <div
               className="w-7 h-7"
@@ -300,17 +318,16 @@ function App() {
                 color: "var(--color-text-primary)",
               }}
             >
-              Beginner<span style={{ color: "var(--color-text-muted)" }}>Chef</span>
+              Beginner
+              <span style={{ color: "var(--color-text-muted)" }}>Chef</span>
             </h1>
           </NavLink>
 
-          {/* Nav Links */}
           <div className="hidden md:flex items-center gap-1">
             {NAV_ITEMS.map((item) => (
               <NavLink
                 key={item.to}
                 to={item.to}
-                end={item.to === "/"}
                 className={({ isActive }) =>
                   `nav-link ${isActive ? "active" : ""}`
                 }
@@ -323,7 +340,6 @@ function App() {
 
         {/* Right side */}
         <div className="flex items-center gap-3">
-          {/* Network badge */}
           {isWrongNetwork ? (
             <span
               className="pill-badge"
@@ -352,7 +368,6 @@ function App() {
             </span>
           )}
 
-          {/* Wallet */}
           {account ? (
             <div className="flex items-center gap-2">
               <span
@@ -377,14 +392,20 @@ function App() {
                   fontFamily: "var(--font-mono)",
                 }}
                 onMouseEnter={(e) => {
-                  (e.currentTarget as HTMLButtonElement).style.borderColor = "#9F2F2D";
-                  (e.currentTarget as HTMLButtonElement).style.color = "#9F2F2D";
-                  (e.currentTarget as HTMLButtonElement).style.background = "var(--color-error-bg)";
+                  (e.currentTarget as HTMLButtonElement).style.borderColor =
+                    "#9F2F2D";
+                  (e.currentTarget as HTMLButtonElement).style.color =
+                    "#9F2F2D";
+                  (e.currentTarget as HTMLButtonElement).style.background =
+                    "var(--color-error-bg)";
                 }}
                 onMouseLeave={(e) => {
-                  (e.currentTarget as HTMLButtonElement).style.borderColor = "var(--color-surface-border)";
-                  (e.currentTarget as HTMLButtonElement).style.color = "var(--color-text-muted)";
-                  (e.currentTarget as HTMLButtonElement).style.background = "var(--color-surface)";
+                  (e.currentTarget as HTMLButtonElement).style.borderColor =
+                    "var(--color-surface-border)";
+                  (e.currentTarget as HTMLButtonElement).style.color =
+                    "var(--color-text-muted)";
+                  (e.currentTarget as HTMLButtonElement).style.background =
+                    "var(--color-surface)";
                 }}
               >
                 {account.slice(0, 6)}...{account.slice(-4)}
@@ -408,7 +429,6 @@ function App() {
           <NavLink
             key={item.to}
             to={item.to}
-            end={item.to === "/"}
             className={({ isActive }) =>
               `nav-link text-xs whitespace-nowrap ${isActive ? "active" : ""}`
             }
@@ -419,23 +439,42 @@ function App() {
       </div>
 
       {/* ── Page Content ── */}
-      <main className="max-w-[1200px] w-full mx-auto px-6 py-10 flex-1">
-        <Routes>
-          <Route
-            path="/"
-            element={
+      <Routes>
+        {/* Landing page gets full width — no constrained main wrapper */}
+        <Route path="/" element={<LandingPage />} />
+
+        {/* App pages get the constrained layout */}
+        <Route
+          path="/dashboard"
+          element={
+            <main className="max-w-[1200px] w-full mx-auto px-6 py-10 flex-1">
               <Dashboard
                 provider={provider}
                 account={account}
+                connectWallet={connectWallet}
                 totalAllocPoint={totalAllocPoint}
                 rewardRate={rewardRate}
               />
-            }
-          />
-          <Route path="/faucet" element={<FaucetPage provider={provider} />} />
-          <Route path="/history" element={<HistoryPage provider={provider} />} />
-        </Routes>
-      </main>
+            </main>
+          }
+        />
+        <Route
+          path="/faucet"
+          element={
+            <main className="max-w-[1200px] w-full mx-auto px-6 py-10 flex-1">
+              <FaucetPage provider={provider} />
+            </main>
+          }
+        />
+        <Route
+          path="/history"
+          element={
+            <main className="max-w-[1200px] w-full mx-auto px-6 py-10 flex-1">
+              <HistoryPage provider={provider} />
+            </main>
+          }
+        />
+      </Routes>
 
       {/* ── Footer ── */}
       <footer
@@ -456,7 +495,7 @@ function App() {
         </div>
       </footer>
     </div>
-  )
+  );
 }
 
-export default App
+export default App;

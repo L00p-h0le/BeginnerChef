@@ -75,16 +75,8 @@ export function FaucetPage({ provider }: FaucetPageProps) {
     <div>
       {/* Page Header */}
       <div className="mb-10">
-        <h1
-          className="text-4xl mb-3"
-          style={{
-            fontFamily: "var(--font-display)",
-            fontWeight: 400,
-            letterSpacing: "-0.03em",
-            lineHeight: "1.1",
-          }}
-        >
-          Test Tokens
+        <h1 className="scanline-title text-5xl md:text-6xl mb-4">
+          Faucet
         </h1>
         <p className="text-lg max-w-xl" style={{ color: "var(--color-text-muted)" }}>
           Mint test assets to interact with the BeginnerChef protocol on the

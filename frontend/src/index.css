@@ -176,9 +176,11 @@ body {
 ::-webkit-scrollbar {
   width: 6px;
 }
+
 ::-webkit-scrollbar-track {
   background: var(--color-bg);
 }
+
 ::-webkit-scrollbar-thumb {
   background: #DCDCDC;
   border-radius: 3px;
@@ -219,7 +221,7 @@ body {
   opacity: 0;
   transform: translateY(12px);
   transition: opacity 600ms cubic-bezier(0.16, 1, 0.3, 1),
-              transform 600ms cubic-bezier(0.16, 1, 0.3, 1);
+    transform 600ms cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .scroll-entry.visible {
@@ -228,10 +230,21 @@ body {
 }
 
 /* Staggered reveal delay */
-.stagger-1 { transition-delay: 80ms; }
-.stagger-2 { transition-delay: 160ms; }
-.stagger-3 { transition-delay: 240ms; }
-.stagger-4 { transition-delay: 320ms; }
+.stagger-1 {
+  transition-delay: 80ms;
+}
+
+.stagger-2 {
+  transition-delay: 160ms;
+}
+
+.stagger-3 {
+  transition-delay: 240ms;
+}
+
+.stagger-4 {
+  transition-delay: 320ms;
+}
 
 /* Chrome, Safari, Edge, Opera */
 input::-webkit-outer-spin-button,
@@ -243,4 +256,33 @@ input::-webkit-inner-spin-button {
 /* Firefox */
 input[type=number] {
   -moz-appearance: textfield;
+}
+
+/* ── Scanline Title (Brutalist style) ── */
+.scanline-title {
+  font-family: var(--font-body), sans-serif;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: -0.02em;
+  line-height: 1.05;
+  background: repeating-linear-gradient(
+    0deg,
+    #000000,
+    #000000 2px,
+    transparent 2px,
+    transparent 4px
+  );
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  color: transparent;
+}
+
+/* ── Feature Card ── */
+.feature-card {
+  transition: background-color 200ms ease;
+}
+
+.feature-card:hover {
+  background-color: var(--color-surface-high) !important;
 }
