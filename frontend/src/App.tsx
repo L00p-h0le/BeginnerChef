@@ -1,294 +1,50 @@
-import { useState, useEffect, useRef } from "react";
-import { Routes, Route, NavLink, useLocation } from "react-router-dom";
+import { Routes, Route, useLocation } from "react-router-dom";
 import { Toaster } from "sonner";
-import { BrowserProvider, formatEther } from "ethers";
-import {
-  getProvider,
-  getChefContract,
-  getERC20Contract,
-  REWARD_TOKEN_ADDRESS,
-  POOLS,
-  EXPECTED_CHAIN_ID,
-  CHEF_ADDRESS,
-} from "./utils/contracts";
-import { PoolCard } from "./components/PoolCard";
+import { useWeb3 } from "./hooks/useWeb3";
+import { Navbar } from "./components/Navbar";
+import { LandingPage } from "./components/LandingPage";
+import { Dashboard } from "./components/Dashboard";
 import { FaucetPage } from "./components/FaucetPage";
 import { HistoryPage } from "./components/HistoryPage";
-import { LandingPage } from "./components/LandingPage";
 import { AdminPanel } from "./components/AdminPanel";
-import { Dashboard } from "./components/Dashboard";
-
-/* ── Navigation ── */
-
-const NAV_ITEMS = [
-  { to: "/dashboard", label: "Dashboard" },
-  { to: "/history", label: "History" },
-  { to: "/faucet", label: "Faucet" },
-  { to: "/admin", label: "Admin" },
-];
-
-/* ── App Shell ── */
 
 function App() {
-  const [provider, setProvider] = useState<BrowserProvider | null>(null);
-  const [account, setAccount] = useState<string>("");
-  const [isWrongNetwork, setIsWrongNetwork] = useState(false);
-  const [totalAllocPoint, setTotalAllocPoint] = useState<number>(0);
-  const [rewardRate, setRewardRate] = useState<string>("0");
-  const [rwdBalance, setRwdBalance] = useState<string>("0");
-  const [globalTVL, setGlobalTVL] = useState<string>("0");
-  const [totalUserStaked, setTotalUserStaked] = useState<string>("0");
-  const [totalUserClaimable, setTotalUserClaimable] = useState<string>("0");
-
-  const connectWallet = async () => {
-    const prov = getProvider();
-    if (!prov) {
-      alert("Please install MetaMask or another Web3 wallet!");
-      return;
-    }
-    try {
-      const accounts = await prov.send("eth_requestAccounts", []);
-      const network = await prov.getNetwork();
-
-      if (Number(network.chainId) !== EXPECTED_CHAIN_ID) {
-        setIsWrongNetwork(true);
-        try {
-          await prov.send("wallet_switchEthereumChain", [
-            { chainId: `0x${EXPECTED_CHAIN_ID.toString(16)}` },
-          ]);
-          setIsWrongNetwork(false);
-        } catch (switchError) {
-          console.error(switchError);
-        }
-      }
-
-      setAccount(accounts[0]);
-      setProvider(prov);
-    } catch (err) {
-      console.error(err);
-    }
-  };
-
-  const disconnectWallet = () => {
-    setProvider(null);
-    setAccount("");
-    setTotalAllocPoint(0);
-    setRewardRate("0");
-    setRwdBalance("0");
-    setGlobalTVL("0");
-    setTotalUserStaked("0");
-    setTotalUserClaimable("0");
-  };
-
-  const loadGlobalData = async () => {
-    if (!provider) return;
-    try {
-      const chef = await getChefContract(provider);
-      const alloc = await chef.totalAllocPoint();
-      setTotalAllocPoint(Number(alloc));
-
-      const rate = await chef.rewardPerSecond();
-      setRewardRate(formatEther(rate));
-
-      let tvlSum = 0n;
-      let stakedSum = 0n;
-      let claimableSum = 0n;
-
-      // Always fetch TVL
-      for (const pool of POOLS) {
-        const token = await getERC20Contract(pool.address, provider);
-        const poolTVL = await token.balanceOf(CHEF_ADDRESS);
-        tvlSum += poolTVL;
-      }
-
-      // Try fetching user specific data
-      try {
-        const signer = await provider.getSigner();
-        const userAddr = await signer.getAddress();
-        const rwdToken = await getERC20Contract(
-          REWARD_TOKEN_ADDRESS,
-          provider
-        );
-        const bal = await rwdToken.balanceOf(userAddr);
-        setRwdBalance(formatEther(bal));
-
-        for (const pool of POOLS) {
-          const userInfo = await chef.userInfo(pool.pid, userAddr);
-          stakedSum += userInfo[0];
-
-          const pRewards = await chef.pendingRewards(pool.pid, userAddr);
-          claimableSum += pRewards;
-        }
-      } catch (e) {
-        console.error("Error fetching user balances", e);
-      }
-
-      setGlobalTVL(formatEther(tvlSum));
-      setTotalUserStaked(formatEther(stakedSum));
-      setTotalUserClaimable(formatEther(claimableSum));
-    } catch (err) {
-      console.error(err);
-    }
-  };
-
-  useEffect(() => {
-    if (provider) {
-      loadGlobalData();
-      const interval = setInterval(loadGlobalData, 5000);
-      return () => clearInterval(interval);
-    }
-  }, [provider]);
-
-
+  const {
+    provider,
+    account,
+    isWrongNetwork,
+    totalAllocPoint,
+    rewardRate,
+    rwdBalance,
+    globalTVL,
+    totalUserStaked,
+    totalUserClaimable,
+    connectWallet,
+    disconnectWallet,
+  } = useWeb3();
 
   const location = useLocation();
 
   return (
-    <div className={`min-h-screen flex flex-col ${location.pathname !== "/" ? "dotted-grid-bg" : ""}`}>
+    <div
+      className={`min-h-screen flex flex-col ${
+        location.pathname !== "/" ? "dotted-grid-bg" : ""
+      }`}
+    >
       <Toaster theme="light" position="bottom-right" />
 
       {/* ── Navbar ── */}
-      <nav
-        className="navbar mx-4 mt-4 px-6 py-3.5 flex justify-between items-center sticky top-4 z-50 relative"
-        style={{
-          background: "#ffffff",
-          backgroundColor: "#ffffff",
-          border: "1px solid #e5e5e5",
-          borderRadius: "12px",
-          boxShadow: "0 2px 8px rgba(0, 0, 0, 0.04)",
-        }}
-      >
-        <NavLink to="/" className="flex items-center shrink-0">
-          <h1
-            className="text-lg font-bold tracking-tight"
-            style={{
-              fontFamily: "var(--font-body)",
-              color: "var(--color-text-primary)",
-            }}
-          >
-            Beginner
-            <span style={{ color: "var(--color-text-muted)" }}>Chef</span>
-          </h1>
-        </NavLink>
-
-        {/* Center Nav Items */}
-        <div className="hidden md:flex items-center gap-1 absolute left-1/2 -translate-x-1/2">
-          {NAV_ITEMS.map((item) => (
-            <NavLink
-              key={item.to}
-              to={item.to}
-              className={({ isActive }) =>
-                `nav-link ${isActive ? "active" : ""}`
-              }
-            >
-              {item.label}
-            </NavLink>
-          ))}
-        </div>
-
-        {/* Right side */}
-        <div className="flex items-center gap-3">
-          {isWrongNetwork ? (
-            <span
-              className="pill-badge"
-              style={{
-                color: "var(--color-error)",
-                background: "var(--color-error-bg)",
-              }}
-            >
-              Wrong Network
-            </span>
-          ) : (
-            <span
-              className="text-xs font-medium px-3 py-1.5 hidden sm:inline-flex items-center gap-1.5"
-              style={{
-                color: "var(--color-text-muted)",
-                background: "var(--color-surface)",
-                border: "1px solid var(--color-surface-border)",
-                borderRadius: "6px",
-              }}
-            >
-              <span
-                className="w-1.5 h-1.5 rounded-full inline-block"
-                style={{ background: "var(--color-warning)" }}
-              />
-              Sepolia
-            </span>
-          )}
-
-          {account ? (
-            <div className="flex items-center gap-2">
-              <span
-                className="text-xs font-bold px-3 py-1.5 hidden sm:inline-block"
-                style={{
-                  color: "var(--color-accent-green-text)",
-                  background: "var(--color-accent-green)",
-                  borderRadius: "6px",
-                  fontFamily: "var(--font-mono)",
-                }}
-              >
-                {Number(rwdBalance).toFixed(2)} RWD
-              </span>
-              <button
-                onClick={disconnectWallet}
-                className="px-3.5 py-1.5 font-mono text-xs transition-colors"
-                style={{
-                  background: "var(--color-surface)",
-                  border: "1px solid var(--color-surface-border)",
-                  borderRadius: "6px",
-                  color: "var(--color-text-muted)",
-                  fontFamily: "var(--font-mono)",
-                }}
-                onMouseEnter={(e) => {
-                  (e.currentTarget as HTMLButtonElement).style.borderColor =
-                    "#9F2F2D";
-                  (e.currentTarget as HTMLButtonElement).style.color =
-                    "#9F2F2D";
-                  (e.currentTarget as HTMLButtonElement).style.background =
-                    "var(--color-error-bg)";
-                }}
-                onMouseLeave={(e) => {
-                  (e.currentTarget as HTMLButtonElement).style.borderColor =
-                    "var(--color-surface-border)";
-                  (e.currentTarget as HTMLButtonElement).style.color =
-                    "var(--color-text-muted)";
-                  (e.currentTarget as HTMLButtonElement).style.background =
-                    "var(--color-surface)";
-                }}
-              >
-                {account.slice(0, 6)}...{account.slice(-4)}
-              </button>
-            </div>
-          ) : (
-            <button
-              onClick={connectWallet}
-              className="neo-btn px-5 py-2 text-sm font-semibold"
-              style={{ borderRadius: "6px" }}
-            >
-              Connect Wallet
-            </button>
-          )}
-        </div>
-      </nav>
-
-      {/* ── Mobile Nav ── */}
-      <div className="md:hidden flex gap-1 mx-4 mt-3 overflow-x-auto pb-1">
-        {NAV_ITEMS.map((item) => (
-          <NavLink
-            key={item.to}
-            to={item.to}
-            className={({ isActive }) =>
-              `nav-link text-xs whitespace-nowrap ${isActive ? "active" : ""}`
-            }
-          >
-            {item.label}
-          </NavLink>
-        ))}
-      </div>
+      <Navbar
+        isWrongNetwork={isWrongNetwork}
+        account={account}
+        rwdBalance={rwdBalance}
+        connectWallet={connectWallet}
+        disconnectWallet={disconnectWallet}
+      />
 
       {/* ── Page Content ── */}
       <Routes>
-        {/* Landing page gets full width — no constrained main wrapper */}
+        {/* Landing page gets full width */}
         <Route path="/" element={<LandingPage connectWallet={connectWallet} />} />
 
         {/* App pages get the constrained layout */}
