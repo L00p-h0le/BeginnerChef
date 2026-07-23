@@ -34,7 +34,9 @@ contract Deploy is Script {
         rewardToken.mint(address(chef), initialFunding);
 
         chef.add(100, stakedToken1); // pid 0
-        chef.add(50, stakedToken2);  // pid 1
+        chef.add(75, stakedToken2);  // pid 1
+        chef.add(50, stakedToken3);  // pid 2
+        chef.add(25, stakedToken4);  // pid 3
 
         stakedToken1.mint(deployerAddress, 10_000 ether);
         stakedToken2.mint(deployerAddress, 10_000 ether);
