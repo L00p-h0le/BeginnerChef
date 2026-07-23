@@ -10,10 +10,9 @@ interface PoolCardProps {
   address: string;
   symbol: string;
   totalAllocPoint: number;
-  rewardRate: string;
 }
 
-export function PoolCard({ provider, pid, address, symbol, totalAllocPoint, rewardRate }: PoolCardProps) {
+export function PoolCard({ provider, pid, address, symbol, totalAllocPoint }: PoolCardProps) {
   const [stakeAmount, setStakeAmount] = useState("");
   const [withdrawAmount, setWithdrawAmount] = useState("");
   const [staked, setStaked] = useState("0");
@@ -21,7 +20,6 @@ export function PoolCard({ provider, pid, address, symbol, totalAllocPoint, rewa
   const [allowance, setAllowance] = useState("0");
   const [balance, setBalance] = useState("0");
   const [poolShare, setPoolShare] = useState("0");
-  const [poolTVL, setPoolTVL] = useState("0");
   const [loading, setLoading] = useState(false);
 
   const loadData = async () => {
@@ -33,26 +31,23 @@ export function PoolCard({ provider, pid, address, symbol, totalAllocPoint, rewa
       const chef = await getChefContract(provider);
       const token = await getERC20Contract(address, provider);
 
-      // User Info
-      const userInfo = await chef.userInfo(pid, userAddr);
+      // Parallel contract calls for performance
+      const [userInfo, pRewards, bal, allow, poolInfo] = await Promise.all([
+        chef.userInfo(pid, userAddr),
+        chef.pendingRewards(pid, userAddr),
+        token.balanceOf(userAddr),
+        token.allowance(userAddr, CHEF_ADDRESS),
+        chef.poolInfo(pid),
+      ]);
+
       setStaked(formatUnits(userInfo[0]));
-
-      const pRewards = await chef.pendingRewards(pid, userAddr);
       setPending(formatUnits(pRewards));
-
-      const bal = await token.balanceOf(userAddr);
       setBalance(formatUnits(bal));
-
-      const allow = await token.allowance(userAddr, CHEF_ADDRESS);
       setAllowance(formatUnits(allow));
 
-      const poolInfo = await chef.poolInfo(pid);
       if (totalAllocPoint > 0) {
         setPoolShare(((Number(poolInfo[1]) / totalAllocPoint) * 100).toFixed(1));
       }
-
-      const pTVL = await token.balanceOf(CHEF_ADDRESS);
-      setPoolTVL(formatUnits(pTVL));
     } catch (err) {
       console.error("Error loading pool data", err);
     }
@@ -64,112 +59,99 @@ export function PoolCard({ provider, pid, address, symbol, totalAllocPoint, rewa
     return () => clearInterval(interval);
   }, [provider, pid, totalAllocPoint]);
 
-  const handleApprove = async () => {
+  const executeTx = async (
+    txFn: () => Promise<any>,
+    loadingMsg: string,
+    successMsg: string,
+    errorMsg: string,
+    onSuccess?: () => void
+  ) => {
     if (!provider) return;
     setLoading(true);
     try {
-      const token = await getERC20Contract(address, provider);
-      const tx = await token.approve(CHEF_ADDRESS, parseUnits(stakeAmount || "0"));
-      toast.promise(tx.wait(), {
-        loading: "Approving...",
-        success: "Approved",
-        error: "Approval failed"
+      const tx = await txFn();
+      await toast.promise(tx.wait(), {
+        loading: loadingMsg,
+        success: successMsg,
+        error: errorMsg,
       });
-      await tx.wait();
+      if (onSuccess) onSuccess();
       await loadData();
     } catch (err) {
       console.error(err);
-      toast.error("Approval failed");
+      toast.error(errorMsg);
+    } finally {
+      setLoading(false);
     }
-    setLoading(false);
   };
 
-  const handleStake = async () => {
-    if (!provider || !stakeAmount || Number(stakeAmount) <= 0) return;
-    setLoading(true);
-    try {
-      const chef = await getChefContract(provider);
-      const tx = await chef.deposit(pid, parseUnits(stakeAmount));
-      toast.promise(tx.wait(), {
-        loading: "Staking...",
-        success: `Staked ${stakeAmount} ${symbol}`,
-        error: "Stake failed"
-      });
-      await tx.wait();
-      setStakeAmount("");
-      await loadData();
-    } catch (err) {
-      console.error(err);
-      toast.error("Stake failed");
-    }
-    setLoading(false);
+  const handleApprove = () => {
+    executeTx(
+      async () => {
+        const token = await getERC20Contract(address, provider);
+        return token.approve(CHEF_ADDRESS, parseUnits(stakeAmount || "0"));
+      },
+      "Approving...",
+      "Approved",
+      "Approval failed"
+    );
   };
 
-  const handleWithdraw = async () => {
-    if (!provider || !withdrawAmount || Number(withdrawAmount) <= 0) return;
+  const handleStake = () => {
+    if (!stakeAmount || Number(stakeAmount) <= 0) return;
+    executeTx(
+      async () => {
+        const chef = await getChefContract(provider);
+        return chef.deposit(pid, parseUnits(stakeAmount));
+      },
+      "Staking...",
+      `Staked ${stakeAmount} ${symbol}`,
+      "Stake failed",
+      () => setStakeAmount("")
+    );
+  };
+
+  const handleWithdraw = () => {
+    if (!withdrawAmount || Number(withdrawAmount) <= 0) return;
     if (Number(withdrawAmount) > Number(staked)) {
       toast.error("Exceeds staked balance");
       return;
     }
-    setLoading(true);
-    try {
-      const chef = await getChefContract(provider);
-      const tx = await chef.withdraw(pid, parseUnits(withdrawAmount));
-      toast.promise(tx.wait(), {
-        loading: "Withdrawing...",
-        success: `Withdrew ${withdrawAmount} ${symbol}`,
-        error: "Withdraw failed"
-      });
-      await tx.wait();
-      setWithdrawAmount("");
-      await loadData();
-    } catch (err) {
-      console.error(err);
-      toast.error("Withdraw failed");
-    }
-    setLoading(false);
+    executeTx(
+      async () => {
+        const chef = await getChefContract(provider);
+        return chef.withdraw(pid, parseUnits(withdrawAmount));
+      },
+      "Withdrawing...",
+      `Withdrew ${withdrawAmount} ${symbol}`,
+      "Withdraw failed",
+      () => setWithdrawAmount("")
+    );
   };
 
-  const handleClaim = async () => {
-    if (!provider) return;
-    setLoading(true);
-    try {
-      const chef = await getChefContract(provider);
-      const tx = await chef.withdraw(pid, 0); // Claim only
-      toast.promise(tx.wait(), {
-        loading: "Claiming rewards...",
-        success: "Rewards claimed",
-        error: "Claim failed"
-      });
-      await tx.wait();
-      await loadData();
-    } catch (err) {
-      console.error(err);
-      toast.error("Claim failed");
-    }
-    setLoading(false);
+  const handleClaim = () => {
+    executeTx(
+      async () => {
+        const chef = await getChefContract(provider);
+        return chef.withdraw(pid, 0);
+      },
+      "Claiming rewards...",
+      "Rewards claimed",
+      "Claim failed"
+    );
   };
 
-  const handleEmergencyWithdraw = async () => {
-    if (!provider) return;
-    // Confirm with user since this forfeits rewards
+  const handleEmergencyWithdraw = () => {
     if (!window.confirm("Are you sure? Emergency Withdraw will forfeit all your pending rewards.")) return;
-    setLoading(true);
-    try {
-      const chef = await getChefContract(provider);
-      const tx = await chef.emergencyWithdraw(pid);
-      toast.promise(tx.wait(), {
-        loading: "Emergency withdrawing...",
-        success: "Emergency Withdrawn",
-        error: "Emergency Withdraw failed"
-      });
-      await tx.wait();
-      await loadData();
-    } catch (err) {
-      console.error(err);
-      toast.error("Emergency Withdraw failed");
-    }
-    setLoading(false);
+    executeTx(
+      async () => {
+        const chef = await getChefContract(provider);
+        return chef.emergencyWithdraw(pid);
+      },
+      "Emergency withdrawing...",
+      "Emergency Withdrawn",
+      "Emergency Withdraw failed"
+    );
   };
 
   const needsApproval = Number(stakeAmount) > Number(allowance);
@@ -182,11 +164,10 @@ export function PoolCard({ provider, pid, address, symbol, totalAllocPoint, rewa
           <TokenIcon symbol={symbol} className="w-10 h-10 shrink-0" />
           <div>
             <h3
-              className="text-lg font-bold"
+              className="text-lg"
               style={{
                 fontFamily: "var(--font-display)",
                 color: "var(--color-text-primary)",
-                fontWeight: 400,
               }}
             >
               {symbol} Pool
@@ -219,7 +200,7 @@ export function PoolCard({ provider, pid, address, symbol, totalAllocPoint, rewa
         >
           <p
             className="text-xs font-medium uppercase tracking-wider mb-1"
-            style={{ color: "var(--color-text-muted)", letterSpacing: "0.05em" }}
+            style={{ color: "var(--color-text-muted)" }}
           >
             Your Stake
           </p>
@@ -246,7 +227,7 @@ export function PoolCard({ provider, pid, address, symbol, totalAllocPoint, rewa
         >
           <p
             className="text-xs font-medium uppercase tracking-wider mb-1"
-            style={{ color: "var(--color-text-muted)", letterSpacing: "0.05em" }}
+            style={{ color: "var(--color-text-muted)" }}
           >
             Claimable
           </p>
@@ -283,7 +264,7 @@ export function PoolCard({ provider, pid, address, symbol, totalAllocPoint, rewa
         <div className="flex justify-between items-center">
           <label
             className="text-xs font-semibold uppercase tracking-wider"
-            style={{ color: "var(--color-text-muted)", letterSpacing: "0.05em" }}
+            style={{ color: "var(--color-text-muted)" }}
           >
             Stake
           </label>
@@ -345,7 +326,7 @@ export function PoolCard({ provider, pid, address, symbol, totalAllocPoint, rewa
         <div className="flex justify-between items-center">
           <label
             className="text-xs font-semibold uppercase tracking-wider"
-            style={{ color: "var(--color-text-muted)", letterSpacing: "0.05em" }}
+            style={{ color: "var(--color-text-muted)" }}
           >
             Withdraw
           </label>
@@ -387,13 +368,8 @@ export function PoolCard({ provider, pid, address, symbol, totalAllocPoint, rewa
           <button
             onClick={handleEmergencyWithdraw}
             disabled={loading}
-            className="w-full mt-3 py-2 text-sm font-bold transition-all flex items-center justify-center gap-2"
-            style={{
-              backgroundColor: "var(--color-accent-red)",
-              color: "var(--color-accent-red-text)",
-              border: "1px solid rgba(159, 47, 45, 0.2)",
-              borderRadius: "8px",
-            }}
+            className="neo-btn w-full mt-3 py-2.5 text-sm font-semibold flex items-center justify-center gap-2"
+            style={{ borderRadius: "8px" }}
             title="Use this if normal withdraw fails. You will forfeit your pending rewards."
           >
             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">

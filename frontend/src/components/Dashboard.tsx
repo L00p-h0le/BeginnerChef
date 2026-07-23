@@ -198,7 +198,6 @@ export function Dashboard({
                 address={pool.address}
                 symbol={pool.symbol}
                 totalAllocPoint={totalAllocPoint}
-                rewardRate={rewardRate}
               />
             ))}
           </div>
