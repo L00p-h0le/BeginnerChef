@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from "react";
-import { Routes, Route, NavLink } from "react-router-dom";
+import { Routes, Route, NavLink, useLocation } from "react-router-dom";
 import { Toaster } from "sonner";
 import { BrowserProvider, formatEther } from "ethers";
 import {
@@ -373,8 +373,10 @@ function App() {
 
 
 
+  const location = useLocation();
+
   return (
-    <div className="min-h-screen flex flex-col">
+    <div className={`min-h-screen flex flex-col ${location.pathname !== "/" ? "dotted-grid-bg" : ""}`}>
       <Toaster theme="light" position="bottom-right" />
 
       {/* ── Navbar ── */}

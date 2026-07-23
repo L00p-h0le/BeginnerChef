@@ -57,6 +57,11 @@ body {
   -webkit-font-smoothing: antialiased;
 }
 
+.dotted-grid-bg {
+  background-image: radial-gradient(#000000 1.5px, transparent 1.5px);
+  background-size: 24px 24px;
+}
+
 /* ── Flat Card ── */
 .glass-card {
   background: var(--color-surface);
@@ -64,6 +69,8 @@ body {
   border-radius: 12px;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.03);
   transition: box-shadow 200ms ease, border-color 200ms ease;
+  position: relative;
+  z-index: 1;
 }
 
 .glass-card:hover {
@@ -76,6 +83,8 @@ body {
   background: var(--color-surface);
   border: 1px solid var(--color-surface-border);
   border-radius: 8px;
+  position: relative;
+  z-index: 1;
 }
 
 /* ── Buttons ── */
@@ -266,10 +275,10 @@ input[type=number] {
   letter-spacing: -0.02em;
   line-height: 1.05;
   background: repeating-linear-gradient(0deg,
-      #000000,
-      #000000 2px,
-      transparent 2px,
-      transparent 4px);
+      #111111,
+      #111111 2.5px,
+      var(--color-bg) 2.5px,
+      var(--color-bg) 4.5px);
   -webkit-background-clip: text;
   background-clip: text;
   -webkit-text-fill-color: transparent;

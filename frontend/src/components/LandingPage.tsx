@@ -56,7 +56,10 @@ export function LandingPage({ children, connectWallet }: { children?: React.Reac
                   whiteSpace: "nowrap",
                   zIndex: 50,
                   width: "200%",
-                  backgroundImage: "repeating-linear-gradient(0deg, #0f766e, #0f766e 3px, var(--color-bg) 3px, var(--color-bg) 4.5px)"
+                  backgroundImage: "repeating-linear-gradient(0deg, #0f766e, #0f766e 3px, var(--color-bg) 3px, var(--color-bg) 4.5px)",
+                  WebkitBackgroundClip: "text",
+                  backgroundClip: "text",
+                  WebkitTextFillColor: "transparent"
                 }}
               >
                 MASTER DEFI<br />FARMING
