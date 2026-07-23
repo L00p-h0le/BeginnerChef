@@ -109,7 +109,7 @@ export function AdminPanel({ provider, account }: AdminPanelProps) {
     <div>
       <div className="mb-10">
         <h1 className="scanline-title text-4xl md:text-5xl mb-4">Admin Panel</h1>
-        <p className="text-lg text-[var(--color-text-muted)] max-w-xl">
+        <p className="text-lg max-w-none font-bold" style={{ color: "#000000" }}>
           Manage staking pools and reward allocations.
         </p>
       </div>

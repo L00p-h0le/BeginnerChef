@@ -115,13 +115,14 @@ body {
 
 /* Ghost button */
 .ghost-btn {
-  background: transparent;
+  background: var(--color-surface);
   color: var(--color-text-primary);
   border: 1px solid var(--color-surface-border);
   font-weight: 600;
   font-family: var(--font-body);
-  transition: background-color 200ms ease, border-color 200ms ease;
+  transition: background-color 200ms ease, border-color 200ms ease, box-shadow 200ms ease;
   cursor: pointer;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.03);
 }
 
 .ghost-btn:hover:not(:disabled) {
@@ -276,13 +277,14 @@ input[type=number] {
   line-height: 1.05;
   background: repeating-linear-gradient(0deg,
       #111111,
-      #111111 2.5px,
-      var(--color-bg) 2.5px,
-      var(--color-bg) 4.5px);
+      #111111 3.5px,
+      var(--color-bg) 3.5px,
+      var(--color-bg) 5px);
   -webkit-background-clip: text;
   background-clip: text;
   -webkit-text-fill-color: transparent;
   color: transparent;
+  filter: drop-shadow(2px 4px 8px rgba(0, 0, 0, 0.35));
 }
 
 /* ── Feature Card ── */

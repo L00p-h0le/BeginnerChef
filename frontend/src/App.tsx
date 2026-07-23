@@ -80,8 +80,8 @@ function Dashboard({
             Active Pools
           </h1>
           <p
-            className="text-lg max-w-xl"
-            style={{ color: "var(--color-text-muted)" }}
+            className="text-lg max-w-none font-bold"
+            style={{ color: "#000000" }}
           >
             Deposit LP tokens to earn RWD rewards in real-time.
           </p>
@@ -381,12 +381,13 @@ function App() {
 
       {/* ── Navbar ── */}
       <nav
-        className="mx-4 mt-4 px-6 py-3.5 flex justify-between items-center sticky top-4 z-50"
+        className="navbar mx-4 mt-4 px-6 py-3.5 flex justify-between items-center sticky top-4 z-50"
         style={{
-          background: "rgba(247, 246, 243, 0.85)",
-          backdropFilter: "blur(12px)",
-          border: "1px solid var(--color-surface-border)",
+          background: "#ffffff",
+          backgroundColor: "#ffffff",
+          border: "1px solid #e5e5e5",
           borderRadius: "12px",
+          boxShadow: "0 2px 8px rgba(0, 0, 0, 0.04)",
         }}
       >
         <div className="flex items-center gap-6">

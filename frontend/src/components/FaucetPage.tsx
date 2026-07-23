@@ -72,7 +72,7 @@ export function FaucetPage({ provider }: FaucetPageProps) {
         <h1 className="scanline-title text-5xl md:text-6xl mb-4">
           Faucet
         </h1>
-        <p className="text-lg max-w-xl" style={{ color: "var(--color-text-muted)" }}>
+        <p className="text-lg max-w-none font-bold" style={{ color: "#000000" }}>
           Mint test assets to interact with the BeginnerChef protocol on the
           Sepolia network.
         </p>

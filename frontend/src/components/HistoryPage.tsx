@@ -135,7 +135,7 @@ export function HistoryPage({ provider }: HistoryPageProps) {
           <h1 className="scanline-title text-5xl md:text-6xl mb-4">
             Transaction History
           </h1>
-          <p className="text-lg max-w-xl" style={{ color: "var(--color-text-muted)" }}>
+          <p className="text-lg max-w-none font-bold" style={{ color: "#000000" }}>
             Review your on-chain staking activity.
           </p>
         </div>
