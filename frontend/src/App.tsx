@@ -441,7 +441,19 @@ function App() {
       {/* ── Page Content ── */}
       <Routes>
         {/* Landing page gets full width — no constrained main wrapper */}
-        <Route path="/" element={<LandingPage />} />
+        <Route path="/" element={
+          <LandingPage>
+            <main className="max-w-[1200px] w-full mx-auto px-6 py-10 flex-1">
+              <Dashboard
+                provider={provider}
+                account={account}
+                connectWallet={connectWallet}
+                totalAllocPoint={totalAllocPoint}
+                rewardRate={rewardRate}
+              />
+            </main>
+          </LandingPage>
+        } />
 
         {/* App pages get the constrained layout */}
         <Route

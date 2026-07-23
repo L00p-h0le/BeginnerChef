@@ -265,13 +265,11 @@ input[type=number] {
   text-transform: uppercase;
   letter-spacing: -0.02em;
   line-height: 1.05;
-  background: repeating-linear-gradient(
-    0deg,
-    #000000,
-    #000000 2px,
-    transparent 2px,
-    transparent 4px
-  );
+  background: repeating-linear-gradient(0deg,
+      #000000,
+      #000000 2px,
+      transparent 2px,
+      transparent 4px);
   -webkit-background-clip: text;
   background-clip: text;
   -webkit-text-fill-color: transparent;
