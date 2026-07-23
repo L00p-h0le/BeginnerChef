@@ -9,9 +9,10 @@ interface PoolCardProps {
   address: string;
   symbol: string;
   totalAllocPoint: number;
+  rewardRate: string;
 }
 
-export function PoolCard({ provider, pid, address, symbol, totalAllocPoint }: PoolCardProps) {
+export function PoolCard({ provider, pid, address, symbol, totalAllocPoint, rewardRate }: PoolCardProps) {
   const [stakeAmount, setStakeAmount] = useState("");
   const [withdrawAmount, setWithdrawAmount] = useState("");
   const [staked, setStaked] = useState("0");
@@ -19,6 +20,7 @@ export function PoolCard({ provider, pid, address, symbol, totalAllocPoint }: Po
   const [allowance, setAllowance] = useState("0");
   const [balance, setBalance] = useState("0");
   const [poolShare, setPoolShare] = useState("0");
+  const [poolTVL, setPoolTVL] = useState("0");
   const [loading, setLoading] = useState(false);
 
   const loadData = async () => {
@@ -47,6 +49,9 @@ export function PoolCard({ provider, pid, address, symbol, totalAllocPoint }: Po
       if (totalAllocPoint > 0) {
         setPoolShare(((Number(poolInfo[1]) / totalAllocPoint) * 100).toFixed(1));
       }
+
+      const pTVL = await token.balanceOf(CHEF_ADDRESS);
+      setPoolTVL(formatUnits(pTVL));
     } catch (err) {
       console.error("Error loading pool data", err);
     }
@@ -197,15 +202,37 @@ export function PoolCard({ provider, pid, address, symbol, totalAllocPoint }: Po
             <p className="text-xs" style={{ color: "var(--color-text-muted)" }}>Earn RWD</p>
           </div>
         </div>
-        <span
-          className="pill-badge"
-          style={{
-            background: "var(--color-accent-yellow)",
-            color: "var(--color-accent-yellow-text)",
-          }}
-        >
-          {poolShare}% Share
-        </span>
+        <div className="flex gap-2">
+          <span
+            className="pill-badge"
+            style={{
+              background: "var(--color-accent-yellow)",
+              color: "var(--color-accent-yellow-text)",
+            }}
+          >
+            {poolShare}% Share
+          </span>
+          {Number(poolTVL) > 0 && (
+            <span
+              className="pill-badge relative group flex items-center gap-1"
+              style={{
+                background: "var(--color-accent-green)",
+                color: "var(--color-accent-green-text)",
+              }}
+            >
+              {(( (Number(poolShare) / 100) * Number(rewardRate) * 31536000 ) / Number(poolTVL) * 100).toFixed(0)}% APR
+              <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="opacity-70 cursor-help">
+                <circle cx="12" cy="12" r="10"></circle>
+                <line x1="12" y1="16" x2="12" y2="12"></line>
+                <line x1="12" y1="8" x2="12.01" y2="8"></line>
+              </svg>
+              <div className="absolute hidden group-hover:block bottom-full mb-2 right-0 w-48 p-2 text-xs normal-case tracking-normal z-10 text-left shadow-lg"
+                   style={{ background: "var(--color-surface-high)", color: "var(--color-text-primary)", border: "1px solid var(--color-surface-border)", borderRadius: "6px" }}>
+                Assumes 1:1 value parity between staked and reward tokens — no price oracle is used in this testnet demo.
+              </div>
+            </span>
+          )}
+        </div>
       </div>
 
       {/* Stats */}
@@ -288,12 +315,27 @@ export function PoolCard({ provider, pid, address, symbol, totalAllocPoint }: Po
           >
             Stake
           </label>
-          <span
-            className="text-xs tabular-nums"
-            style={{ color: "var(--color-text-muted)", fontFamily: "var(--font-mono)" }}
-          >
-            Balance: {Number(balance).toFixed(4)} {symbol}
-          </span>
+          <div className="flex items-center gap-2">
+            <span
+              className="text-xs tabular-nums"
+              style={{ color: "var(--color-text-muted)", fontFamily: "var(--font-mono)" }}
+            >
+              Balance: {Number(balance).toFixed(4)} {symbol}
+            </span>
+            <button
+              onClick={() => setStakeAmount(balance)}
+              className="text-xs font-semibold px-2 py-0.5 transition-colors"
+              style={{
+                background: "var(--color-surface-high)",
+                border: "1px solid var(--color-surface-border)",
+                borderRadius: "4px",
+                color: "var(--color-text-primary)",
+              }}
+              title="Use max balance"
+            >
+              Max
+            </button>
+          </div>
         </div>
         <div className="flex gap-2">
           <input
@@ -331,12 +373,27 @@ export function PoolCard({ provider, pid, address, symbol, totalAllocPoint }: Po
 
       {/* Withdraw Input */}
       <div className="flex flex-col gap-2">
-        <label
-          className="text-xs font-semibold uppercase tracking-wider"
-          style={{ color: "var(--color-text-muted)", letterSpacing: "0.05em" }}
-        >
-          Withdraw
-        </label>
+        <div className="flex justify-between items-center">
+          <label
+            className="text-xs font-semibold uppercase tracking-wider"
+            style={{ color: "var(--color-text-muted)", letterSpacing: "0.05em" }}
+          >
+            Withdraw
+          </label>
+          <button
+            onClick={() => setWithdrawAmount(staked)}
+            className="text-xs font-semibold px-2 py-0.5 transition-colors"
+            style={{
+              background: "var(--color-surface-high)",
+              border: "1px solid var(--color-surface-border)",
+              borderRadius: "4px",
+              color: "var(--color-text-primary)",
+            }}
+            title="Withdraw all staked"
+          >
+            Max
+          </button>
+        </div>
         <div className="flex gap-2">
           <input
             type="number"

@@ -264,10 +264,11 @@ export function HistoryPage({ provider }: HistoryPageProps) {
                     href={`https://sepolia.etherscan.io/tx/${ev.txHash}`}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="text-xs transition-colors"
+                    className="text-xs transition-colors flex items-center gap-1"
                     style={{
                       color: "var(--color-text-muted)",
                       fontFamily: "var(--font-mono)",
+                      width: "fit-content",
                     }}
                     onMouseEnter={(e) => {
                       (e.currentTarget as HTMLAnchorElement).style.color = "var(--color-text-primary)";
@@ -277,6 +278,11 @@ export function HistoryPage({ provider }: HistoryPageProps) {
                     }}
                   >
                     {shortenHash(ev.txHash)}
+                    <svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="opacity-70">
+                      <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path>
+                      <polyline points="15 3 21 3 21 9"></polyline>
+                      <line x1="10" y1="14" x2="21" y2="3"></line>
+                    </svg>
                   </a>
                 </div>
 

@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from "react";
-import { BrowserRouter, Routes, Route, NavLink } from "react-router-dom";
+import { Routes, Route, NavLink } from "react-router-dom";
 import { Toaster } from "sonner";
 import { BrowserProvider, formatEther } from "ethers";
 import {
@@ -9,11 +9,13 @@ import {
   REWARD_TOKEN_ADDRESS,
   POOLS,
   EXPECTED_CHAIN_ID,
+  CHEF_ADDRESS,
 } from "./utils/contracts";
 import { PoolCard } from "./components/PoolCard";
 import { FaucetPage } from "./components/FaucetPage";
 import { HistoryPage } from "./components/HistoryPage";
 import { LandingPage } from "./components/LandingPage";
+import { AdminPanel } from "./components/AdminPanel";
 
 /** Scroll-entry observer hook */
 function useScrollReveal() {
@@ -51,12 +53,18 @@ function Dashboard({
   connectWallet,
   totalAllocPoint,
   rewardRate,
+  globalTVL,
+  totalUserStaked,
+  totalUserClaimable,
 }: {
   provider: BrowserProvider | null;
   account: string;
   connectWallet: () => void;
   totalAllocPoint: number;
   rewardRate: string;
+  globalTVL: string;
+  totalUserStaked: string;
+  totalUserClaimable: string;
 }) {
   const setRef = useScrollReveal();
 
@@ -89,58 +97,137 @@ function Dashboard({
               minWidth: "180px",
             }}
           >
-            <p
-              className="text-xs font-semibold uppercase tracking-wider mb-1"
-              style={{
-                color: "var(--color-text-muted)",
-                letterSpacing: "0.05em",
-              }}
-            >
-              Reward Rate
-            </p>
-            <p
-              className="text-2xl font-bold tabular-nums"
-              style={{ fontFamily: "var(--font-mono)" }}
-            >
-              {rewardRate}{" "}
-              <span
-                className="text-sm font-normal"
+              <p
+                className="text-xs font-semibold uppercase tracking-wider mb-1"
                 style={{
                   color: "var(--color-text-muted)",
-                  fontFamily: "var(--font-body)",
+                  letterSpacing: "0.05em",
                 }}
               >
-                RWD/sec
-              </span>
-            </p>
-          </div>
-          <div
-            className="px-6 py-5"
-            style={{
-              background: "var(--color-surface)",
-              border: "1px solid var(--color-surface-border)",
-              borderRadius: "8px",
-              minWidth: "140px",
-            }}
-          >
-            <p
-              className="text-xs font-semibold uppercase tracking-wider mb-1"
+                Reward Rate
+              </p>
+              <p
+                className="text-2xl font-bold tabular-nums"
+                style={{ fontFamily: "var(--font-mono)" }}
+              >
+                {rewardRate}{" "}
+                <span
+                  className="text-sm font-normal"
+                  style={{
+                    color: "var(--color-text-muted)",
+                    fontFamily: "var(--font-body)",
+                  }}
+                >
+                  RWD/sec
+                </span>
+              </p>
+            </div>
+            <div
+              className="px-6 py-5"
               style={{
-                color: "var(--color-text-muted)",
-                letterSpacing: "0.05em",
+                background: "var(--color-surface)",
+                border: "1px solid var(--color-surface-border)",
+                borderRadius: "8px",
+                minWidth: "140px",
               }}
             >
-              Active Pools
-            </p>
-            <p
-              className="text-2xl font-bold tabular-nums"
-              style={{ fontFamily: "var(--font-mono)" }}
+              <p
+                className="text-xs font-semibold uppercase tracking-wider mb-1"
+                style={{
+                  color: "var(--color-text-muted)",
+                  letterSpacing: "0.05em",
+                }}
+              >
+                Global TVL
+              </p>
+              <p
+                className="text-2xl font-bold tabular-nums"
+                style={{ fontFamily: "var(--font-mono)" }}
+              >
+                {Number(globalTVL).toFixed(2)}
+              </p>
+            </div>
+            {account && (
+              <>
+                <div
+                  className="px-6 py-5"
+                  style={{
+                    background: "var(--color-surface)",
+                    border: "1px solid var(--color-surface-border)",
+                    borderRadius: "8px",
+                    minWidth: "140px",
+                  }}
+                >
+                  <p
+                    className="text-xs font-semibold uppercase tracking-wider mb-1"
+                    style={{
+                      color: "var(--color-text-muted)",
+                      letterSpacing: "0.05em",
+                    }}
+                  >
+                    My Staked
+                  </p>
+                  <p
+                    className="text-2xl font-bold tabular-nums"
+                    style={{ fontFamily: "var(--font-mono)" }}
+                  >
+                    {Number(totalUserStaked).toFixed(2)}
+                  </p>
+                </div>
+                <div
+                  className="px-6 py-5"
+                  style={{
+                    background: "var(--color-surface)",
+                    border: "1px solid var(--color-surface-border)",
+                    borderRadius: "8px",
+                    minWidth: "140px",
+                  }}
+                >
+                  <p
+                    className="text-xs font-semibold uppercase tracking-wider mb-1"
+                    style={{
+                      color: "var(--color-text-muted)",
+                      letterSpacing: "0.05em",
+                    }}
+                  >
+                    My Claimable
+                  </p>
+                  <p
+                    className="text-2xl font-bold tabular-nums"
+                    style={{ fontFamily: "var(--font-mono)", color: "var(--color-accent-green-text)" }}
+                  >
+                    {Number(totalUserClaimable).toFixed(2)}
+                  </p>
+                </div>
+              </>
+            )}
+            <div
+              className="px-6 py-5"
+              style={{
+                background: "var(--color-surface)",
+                border: "1px solid var(--color-surface-border)",
+                borderRadius: "8px",
+                minWidth: "140px",
+              }}
             >
-              {POOLS.length}
-            </p>
+              <p
+                className="text-xs font-semibold uppercase tracking-wider mb-1"
+                style={{
+                  color: "var(--color-text-muted)",
+                  letterSpacing: "0.05em",
+                }}
+              >
+                Active Pools
+              </p>
+              <p
+                className="text-2xl font-bold tabular-nums"
+                style={{ fontFamily: "var(--font-mono)" }}
+              >
+                {POOLS.length}
+              </p>
+            </div>
           </div>
         </div>
-      </div>
 
       {/* Pools Grid */}
       <section ref={setRef(1)} className="scroll-entry stagger-1">
@@ -176,6 +263,7 @@ function Dashboard({
                 address={pool.address}
                 symbol={pool.symbol}
                 totalAllocPoint={totalAllocPoint}
+                rewardRate={rewardRate}
               />
             ))}
           </div>
@@ -191,6 +279,7 @@ const NAV_ITEMS = [
   { to: "/dashboard", label: "Dashboard" },
   { to: "/history", label: "History" },
   { to: "/faucet", label: "Faucet" },
+  { to: "/admin", label: "Admin" },
 ];
 
 /* ── App Shell ── */
@@ -202,6 +291,9 @@ function App() {
   const [totalAllocPoint, setTotalAllocPoint] = useState<number>(0);
   const [rewardRate, setRewardRate] = useState<string>("0");
   const [rwdBalance, setRwdBalance] = useState<string>("0");
+  const [globalTVL, setGlobalTVL] = useState<string>("0");
+  const [totalUserStaked, setTotalUserStaked] = useState<string>("0");
+  const [totalUserClaimable, setTotalUserClaimable] = useState<string>("0");
 
   const connectWallet = async () => {
     const prov = getProvider();
@@ -238,6 +330,9 @@ function App() {
     setTotalAllocPoint(0);
     setRewardRate("0");
     setRwdBalance("0");
+    setGlobalTVL("0");
+    setTotalUserStaked("0");
+    setTotalUserClaimable("0");
   };
 
   const loadGlobalData = async () => {
@@ -250,6 +345,10 @@ function App() {
       const rate = await chef.rewardPerSecond();
       setRewardRate(formatEther(rate));
 
+      let tvlSum = 0n;
+      let stakedSum = 0n;
+      let claimableSum = 0n;
+
       try {
         const signer = await provider.getSigner();
         const userAddr = await signer.getAddress();
@@ -259,9 +358,31 @@ function App() {
         );
         const bal = await rwdToken.balanceOf(userAddr);
         setRwdBalance(formatEther(bal));
+
+        for (const pool of POOLS) {
+           const token = await getERC20Contract(pool.address, provider);
+           const poolTVL = await token.balanceOf(CHEF_ADDRESS);
+           tvlSum += poolTVL;
+
+           const userInfo = await chef.userInfo(pool.pid, userAddr);
+           stakedSum += userInfo[0];
+
+           const pRewards = await chef.pendingRewards(pool.pid, userAddr);
+           claimableSum += pRewards;
+        }
       } catch (e) {
-        console.error("Error fetching RWD balance", e);
+        console.error("Error fetching user balances", e);
+        // If not logged in, just fetch TVL
+        for (const pool of POOLS) {
+           const token = await getERC20Contract(pool.address, provider);
+           const poolTVL = await token.balanceOf(CHEF_ADDRESS);
+           tvlSum += poolTVL;
+        }
       }
+
+      setGlobalTVL(formatEther(tvlSum));
+      setTotalUserStaked(formatEther(stakedSum));
+      setTotalUserClaimable(formatEther(claimableSum));
     } catch (err) {
       console.error(err);
     }
@@ -450,6 +571,9 @@ function App() {
                 connectWallet={connectWallet}
                 totalAllocPoint={totalAllocPoint}
                 rewardRate={rewardRate}
+                globalTVL={globalTVL}
+                totalUserStaked={totalUserStaked}
+                totalUserClaimable={totalUserClaimable}
               />
             </main>
           </LandingPage>
@@ -466,6 +590,9 @@ function App() {
                 connectWallet={connectWallet}
                 totalAllocPoint={totalAllocPoint}
                 rewardRate={rewardRate}
+                globalTVL={globalTVL}
+                totalUserStaked={totalUserStaked}
+                totalUserClaimable={totalUserClaimable}
               />
             </main>
           }
@@ -483,6 +610,14 @@ function App() {
           element={
             <main className="max-w-[1200px] w-full mx-auto px-6 py-10 flex-1">
               <HistoryPage provider={provider} />
+            </main>
+          }
+        />
+        <Route
+          path="/admin"
+          element={
+            <main className="max-w-[1200px] w-full mx-auto px-6 py-10 flex-1">
+              <AdminPanel provider={provider} account={account} />
             </main>
           }
         />

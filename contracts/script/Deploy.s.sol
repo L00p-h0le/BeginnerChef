@@ -3,9 +3,11 @@ pragma solidity ^0.8.20;
 
 import {Script, console} from "forge-std/Script.sol";
 import {BeginnerChef} from "../src/BeginnerChef.sol";
-import {MockA} from "../src/mocks/MockA.sol";
-import {MockB} from "../src/mocks/MockB.sol";
-import {MockC} from "../src/mocks/MockC.sol";
+import {MockETH} from "../src/mocks/MockETH.sol";
+import {MockSOL} from "../src/mocks/MockSOL.sol";
+import {MockBTC} from "../src/mocks/MockBTC.sol";
+import {MockUSDC} from "../src/mocks/MockUSDC.sol";
+import {MockRWD} from "../src/mocks/MockRWD.sol";
 
 contract Deploy is Script {
     // Well-known Anvil default account #0 — safe to hardcode, holds no real funds
@@ -19,14 +21,16 @@ contract Deploy is Script {
 
         vm.startBroadcast(deployerPrivateKey);
 
-        MockA rewardToken = new MockA("Reward Token", "RWD");
-        MockB stakedToken1 = new MockB("Staked Token 1", "STK1");
-        MockC stakedToken2 = new MockC("Staked Token 2", "STK2");
+        MockRWD rewardToken = new MockRWD("Reward Token", "RWD");
+        MockETH stakedToken1 = new MockETH("mETH", "mETH");
+        MockUSDC stakedToken2 = new MockUSDC("mUSDC", "mUSDC");
+        MockBTC stakedToken3 = new MockBTC("mBTC" , "mBTC");
+        MockSOL stakedToken4 = new MockSOL("mSOL" , "mSOL");
 
-        uint256 rewardPerSecond = 10 ether;
+        uint256 rewardPerSecond = 0.2 ether;
         BeginnerChef chef = new BeginnerChef(rewardToken, rewardPerSecond);
 
-        uint256 initialFunding = 1_000_000 ether;
+        uint256 initialFunding = 4_000_000 ether;
         rewardToken.mint(address(chef), initialFunding);
 
         chef.add(100, stakedToken1); // pid 0
@@ -34,6 +38,8 @@ contract Deploy is Script {
 
         stakedToken1.mint(deployerAddress, 10_000 ether);
         stakedToken2.mint(deployerAddress, 10_000 ether);
+        stakedToken3.mint(deployerAddress, 10_000 ether);
+        stakedToken4.mint(deployerAddress, 10_000 ether);
 
         vm.stopBroadcast();
 
@@ -41,9 +47,13 @@ contract Deploy is Script {
         console.log("Reward Token:", address(rewardToken));
         console.log("Staked Token 1:", address(stakedToken1));
         console.log("Staked Token 2:", address(stakedToken2));
+        console.log("Staked Token 3:", address(stakedToken3));
+        console.log("Staked Token 4:", address(stakedToken4));
         console.log("BeginnerChef:", address(chef));
         console.log("Pool 0 (STK1) allocPoint: 100");
-        console.log("Pool 1 (STK2) allocPoint: 50");
+        console.log("Pool 1 (STK2) allocPoint: 75");
+        console.log("Pool 2 (STK3) allocPoint: 50");
+        console.log("Pool 3 (STK4) allocPoint: 25");
         console.log("Reward token pre-funded (ether units):", initialFunding / 1 ether);
     }
 }

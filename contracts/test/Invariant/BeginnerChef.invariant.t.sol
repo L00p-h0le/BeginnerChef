@@ -4,16 +4,16 @@ pragma solidity ^0.8.20;
 import {Test, console} from "forge-std/Test.sol";
 import {StdInvariant} from "forge-std/StdInvariant.sol";
 import {BeginnerChef} from "../../src/BeginnerChef.sol";
-import {MockA} from "../../src/mocks/MockA.sol";
-import {MockB} from "../../src/mocks/MockB.sol";
-import {MockC} from "../../src/mocks/MockC.sol";
+import {MockRWD} from "../../src/mocks/MockRWD.sol";
+import {MockETH} from "../../src/mocks/MockETH.sol";
+import {MockUSDC} from "../../src/mocks/MockUSDC.sol";
 import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 
 contract Handler is Test {
     BeginnerChef chef;
-    MockA rewardToken;
-    MockB stakedToken1;
-    MockC stakedToken2;
+    MockRWD rewardToken;
+    MockETH stakedToken1;
+    MockUSDC stakedToken2;
 
     uint256 public constant REWARD_PER_SECOND = 10 ether;
     uint256 public constant TOTAL_MINTED = 10_000_000 ether;
@@ -34,9 +34,9 @@ contract Handler is Test {
 
     constructor(
         BeginnerChef _chef, 
-        MockA _rewardToken, 
-        MockB _stakedToken1, 
-        MockC _stakedToken2
+        MockRWD _rewardToken, 
+        MockETH _stakedToken1, 
+        MockUSDC _stakedToken2
     ) {
         chef = _chef;
         rewardToken = _rewardToken;
@@ -164,15 +164,15 @@ contract Handler is Test {
 
 contract BeginnerChefInvariantTest is StdInvariant, Test {
     BeginnerChef chef;
-    MockA rewardToken;
-    MockB stakedToken1;
-    MockC stakedToken2;
+    MockRWD rewardToken;
+    MockETH stakedToken1;
+    MockUSDC stakedToken2;
     Handler handler;
 
     function setUp() public {
-        rewardToken = new MockA("Reward Token", "RWD");
-        stakedToken1 = new MockB("Staked Token 1", "STK1");
-        stakedToken2 = new MockC("Staked Token 2", "STK2");
+        rewardToken = new MockRWD("Reward Token", "RWD");
+        stakedToken1 = new MockETH("mETH", "mETH");
+        stakedToken2 = new MockUSDC("mUSDC", "mUSDC");
 
         chef = new BeginnerChef(rewardToken, 10 ether);
 

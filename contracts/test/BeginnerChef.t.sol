@@ -3,18 +3,18 @@ pragma solidity ^0.8.20;
 
 import {Test, console} from "forge-std/Test.sol";
 import {BeginnerChef} from "../src/BeginnerChef.sol";
-import {MockA} from "../src/mocks/MockA.sol";
-import {MockB} from "../src/mocks/MockB.sol";
-import {MockC} from "../src/mocks/MockC.sol";
+import {MockRWD} from "../src/mocks/MockRWD.sol";
+import {MockETH} from "../src/mocks/MockETH.sol";
+import {MockUSDC} from "../src/mocks/MockUSDC.sol";
 import {MockFeeOnTransfer} from "../src/mocks/MockFeeOnTransfer.sol";
 import {MockMalicious} from "../src/mocks/MockMalicious.sol";
 import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 
 contract BeginnerChefTest is Test {
     BeginnerChef chef;
-    MockA rewardToken;
-    MockB stakedToken1;
-    MockC stakedToken2;
+    MockRWD rewardToken;
+    MockETH stakedToken1;
+    MockUSDC stakedToken2;
 
     address alice = address(0x1);
     address bob = address(0x2);
@@ -22,9 +22,9 @@ contract BeginnerChefTest is Test {
     uint256 REWARD_PER_SECOND = 10 ether;
 
     function setUp() public {
-        rewardToken = new MockA("Reward Token", "RWD");
-        stakedToken1 = new MockB("Staked Token 1", "STK1");
-        stakedToken2 = new MockC("Staked Token 2", "STK2");
+        rewardToken = new MockRWD("Reward Token", "RWD");
+        stakedToken1 = new MockETH("mETH", "mETH");
+        stakedToken2 = new MockUSDC("mUSDC", "mUSDC");
 
         chef = new BeginnerChef(rewardToken, REWARD_PER_SECOND);
 

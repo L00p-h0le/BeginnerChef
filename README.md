@@ -2,7 +2,7 @@
 
 A MasterChef-style (SushiSwap-inspired) multi-pool staking platform, built from scratch in Solidity as an end-to-end demonstration of smart contract design, testing, and deployment.
 
-**Live on Sepolia:** [`0xb2027252C51202E66e439a5f0538372172782817`](https://sepolia.etherscan.io/address/0xb2027252c51202e66e439a5f0538372172782817) — verified source
+**Live on Sepolia:** [`0x389F8290344516f2973E5E5f145537d6b7613086`](https://sepolia.etherscan.io/address/0x389F8290344516f2973E5E5f145537d6b7613086) — verified source
 
 ---
 
