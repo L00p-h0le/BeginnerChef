@@ -68,13 +68,12 @@ export function FaucetPage({ provider }: FaucetPageProps) {
   return (
     <div>
       {/* Page Header */}
-      <div className="mb-10">
-        <h1 className="scanline-title text-5xl md:text-6xl mb-4">
+      <div className="tight-header-glass">
+        <h1 className="scanline-title text-5xl md:text-6xl mb-3">
           Faucet
         </h1>
-        <p className="text-lg max-w-none font-bold" style={{ color: "#000000" }}>
-          Mint test assets to interact with the BeginnerChef protocol on the
-          Sepolia network.
+        <p className="text-lg font-bold" style={{ color: "#000000" }}>
+          Mint Test Tokens
         </p>
       </div>
 

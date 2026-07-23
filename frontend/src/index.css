@@ -62,20 +62,34 @@ body {
   background-size: 24px 24px;
 }
 
+/* Tight frosted glass container for page header titles */
+.tight-header-glass {
+  display: inline-block;
+  width: fit-content;
+  max-width: 100%;
+  background: rgba(247, 246, 243, 0.85);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border: 1px solid var(--color-bg);
+  border-radius: 16px;
+  padding: 16px 24px;
+  margin-bottom: 24px;
+}
+
 /* ── Flat Card ── */
 .glass-card {
   background: var(--color-surface);
   border: 1px solid var(--color-surface-border);
   border-radius: 12px;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.03);
-  transition: box-shadow 200ms ease, border-color 200ms ease;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08), 0 1px 3px rgba(0, 0, 0, 0.05);
+  transition: box-shadow 200ms ease, border-color 200ms ease, transform 200ms ease;
   position: relative;
   z-index: 1;
 }
 
 .glass-card:hover {
-  border-color: #DCDCDC;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+  border-color: #CCCCCC;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12), 0 2px 6px rgba(0, 0, 0, 0.06);
 }
 
 /* ── Surface Card ── */
@@ -285,6 +299,12 @@ input[type=number] {
   -webkit-text-fill-color: transparent;
   color: transparent;
   filter: drop-shadow(2px 4px 8px rgba(0, 0, 0, 0.35));
+}
+
+/* Stat Summary Card Shadow */
+.stat-card {
+  background-color: #ffffff !important;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08), 0 1px 3px rgba(0, 0, 0, 0.05) !important;
 }
 
 /* ── Feature Card ── */

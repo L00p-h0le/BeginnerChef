@@ -73,28 +73,29 @@ function Dashboard({
       {/* Header & Stats */}
       <div
         ref={setRef(0)}
-        className="scroll-entry mb-10 flex flex-col md:flex-row md:items-start justify-between gap-6"
+        className="scroll-entry mb-10 flex flex-col gap-6"
       >
-        <div>
-          <h1 className="scanline-title text-5xl md:text-6xl mb-4 whitespace-nowrap">
+        <div className="tight-header-glass">
+          <h1 className="scanline-title text-5xl md:text-6xl mb-3 whitespace-nowrap">
             Active Pools
           </h1>
           <p
-            className="text-lg max-w-none font-bold"
+            className="text-lg font-bold"
             style={{ color: "#000000" }}
           >
             Deposit LP tokens to earn RWD rewards in real-time.
           </p>
         </div>
 
-        <div className="flex flex-wrap gap-4 shrink-0">
+        <div className="flex flex-wrap gap-4">
           <div
-            className="px-6 py-5"
+            className="stat-card px-6 py-5"
             style={{
-              background: "var(--color-surface)",
+              background: "#ffffff",
               border: "1px solid var(--color-surface-border)",
               borderRadius: "8px",
               minWidth: "180px",
+              boxShadow: "0 4px 12px rgba(0, 0, 0, 0.08), 0 1px 3px rgba(0, 0, 0, 0.05)",
             }}
           >
             <p
@@ -123,12 +124,13 @@ function Dashboard({
             </p>
           </div>
           <div
-            className="px-6 py-5"
+            className="stat-card px-6 py-5"
             style={{
-              background: "var(--color-surface)",
+              background: "#ffffff",
               border: "1px solid var(--color-surface-border)",
               borderRadius: "8px",
               minWidth: "140px",
+              boxShadow: "0 4px 12px rgba(0, 0, 0, 0.08), 0 1px 3px rgba(0, 0, 0, 0.05)",
             }}
           >
             <p
@@ -150,12 +152,13 @@ function Dashboard({
           {account && (
             <>
               <div
-                className="px-6 py-5"
+                className="stat-card px-6 py-5"
                 style={{
-                  background: "var(--color-surface)",
+                  background: "#ffffff",
                   border: "1px solid var(--color-surface-border)",
                   borderRadius: "8px",
                   minWidth: "140px",
+                  boxShadow: "0 4px 12px rgba(0, 0, 0, 0.08), 0 1px 3px rgba(0, 0, 0, 0.05)",
                 }}
               >
                 <p
@@ -175,12 +178,13 @@ function Dashboard({
                 </p>
               </div>
               <div
-                className="px-6 py-5"
+                className="stat-card px-6 py-5"
                 style={{
-                  background: "var(--color-surface)",
+                  background: "#ffffff",
                   border: "1px solid var(--color-surface-border)",
                   borderRadius: "8px",
                   minWidth: "140px",
+                  boxShadow: "0 4px 12px rgba(0, 0, 0, 0.08), 0 1px 3px rgba(0, 0, 0, 0.05)",
                 }}
               >
                 <p

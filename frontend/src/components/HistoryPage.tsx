@@ -130,12 +130,12 @@ export function HistoryPage({ provider }: HistoryPageProps) {
   return (
     <div>
       {/* Page Header */}
-      <div className="mb-10 flex items-center justify-between">
-        <div>
-          <h1 className="scanline-title text-5xl md:text-6xl mb-4">
+      <div className="flex items-center justify-between gap-4 mb-6">
+        <div className="tight-header-glass">
+          <h1 className="scanline-title text-5xl md:text-6xl mb-3">
             Transaction History
           </h1>
-          <p className="text-lg max-w-none font-bold" style={{ color: "#000000" }}>
+          <p className="text-lg font-bold" style={{ color: "#000000" }}>
             Review your on-chain staking activity.
           </p>
         </div>
