@@ -298,13 +298,18 @@ input[type=number] {
   background-clip: text;
   -webkit-text-fill-color: transparent;
   color: transparent;
-  filter: drop-shadow(2px 4px 8px rgba(0, 0, 0, 0.35));
 }
 
 /* Stat Summary Card Shadow */
 .stat-card {
   background-color: #ffffff !important;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08), 0 1px 3px rgba(0, 0, 0, 0.05) !important;
+}
+
+/* Footer solid background */
+footer {
+  background-color: #ffffff !important;
+  border-top: 1px solid #e5e5e5;
 }
 
 /* ── Feature Card ── */

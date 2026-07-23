@@ -385,7 +385,7 @@ function App() {
 
       {/* ── Navbar ── */}
       <nav
-        className="navbar mx-4 mt-4 px-6 py-3.5 flex justify-between items-center sticky top-4 z-50"
+        className="navbar mx-4 mt-4 px-6 py-3.5 flex justify-between items-center sticky top-4 z-50 relative"
         style={{
           background: "#ffffff",
           backgroundColor: "#ffffff",
@@ -394,40 +394,32 @@ function App() {
           boxShadow: "0 2px 8px rgba(0, 0, 0, 0.04)",
         }}
       >
-        <div className="flex items-center gap-6">
-          <NavLink to="/" className="flex items-center gap-2 shrink-0">
-            <div
-              className="w-7 h-7"
-              style={{
-                background: "var(--color-text-primary)",
-                borderRadius: "6px",
-              }}
-            />
-            <h1
-              className="text-lg font-bold tracking-tight"
-              style={{
-                fontFamily: "var(--font-body)",
-                color: "var(--color-text-primary)",
-              }}
-            >
-              Beginner
-              <span style={{ color: "var(--color-text-muted)" }}>Chef</span>
-            </h1>
-          </NavLink>
+        <NavLink to="/" className="flex items-center shrink-0">
+          <h1
+            className="text-lg font-bold tracking-tight"
+            style={{
+              fontFamily: "var(--font-body)",
+              color: "var(--color-text-primary)",
+            }}
+          >
+            Beginner
+            <span style={{ color: "var(--color-text-muted)" }}>Chef</span>
+          </h1>
+        </NavLink>
 
-          <div className="hidden md:flex items-center gap-1">
-            {NAV_ITEMS.map((item) => (
-              <NavLink
-                key={item.to}
-                to={item.to}
-                className={({ isActive }) =>
-                  `nav-link ${isActive ? "active" : ""}`
-                }
-              >
-                {item.label}
-              </NavLink>
-            ))}
-          </div>
+        {/* Center Nav Items */}
+        <div className="hidden md:flex items-center gap-1 absolute left-1/2 -translate-x-1/2">
+          {NAV_ITEMS.map((item) => (
+            <NavLink
+              key={item.to}
+              to={item.to}
+              className={({ isActive }) =>
+                `nav-link ${isActive ? "active" : ""}`
+              }
+            >
+              {item.label}
+            </NavLink>
+          ))}
         </div>
 
         {/* Right side */}
@@ -578,25 +570,6 @@ function App() {
           }
         />
       </Routes>
-
-      {/* ── Footer ── */}
-      <footer
-        className="px-6 py-6 mt-auto flex flex-wrap items-center justify-between gap-4 text-xs"
-        style={{
-          borderTop: "1px solid var(--color-surface-border)",
-          color: "var(--color-text-muted)",
-        }}
-      >
-        <span>&copy; {new Date().getFullYear()} BeginnerChef Protocol</span>
-        <div className="flex gap-4">
-          <span className="hover:text-[var(--color-text-primary)] cursor-pointer transition-colors">
-            Docs
-          </span>
-          <span className="hover:text-[var(--color-text-primary)] cursor-pointer transition-colors">
-            Security
-          </span>
-        </div>
-      </footer>
     </div>
   );
 }
