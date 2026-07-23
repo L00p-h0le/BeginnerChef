@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { BrowserProvider, parseUnits, formatUnits } from "ethers";
 import { toast } from "sonner";
 import { getChefContract, getERC20Contract, CHEF_ADDRESS } from "../utils/contracts";
+import { TokenIcon } from "./TokenIcon";
 
 interface PoolCardProps {
   provider: BrowserProvider | null;
@@ -178,16 +179,7 @@ export function PoolCard({ provider, pid, address, symbol, totalAllocPoint, rewa
       {/* Header */}
       <div className="flex justify-between items-center">
         <div className="flex items-center gap-3">
-          <div
-            className="w-10 h-10 flex items-center justify-center text-sm font-bold"
-            style={{
-              background: "var(--color-accent-blue)",
-              color: "var(--color-accent-blue-text)",
-              borderRadius: "8px",
-            }}
-          >
-            {symbol.substring(0, 2)}
-          </div>
+          <TokenIcon symbol={symbol} className="w-10 h-10 shrink-0" />
           <div>
             <h3
               className="text-lg font-bold"

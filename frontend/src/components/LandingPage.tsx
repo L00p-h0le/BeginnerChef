@@ -1,5 +1,5 @@
 import { useEffect, useRef } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { TokenShader } from "./TokenShader";
 
 function useScrollReveal() {
@@ -31,8 +31,9 @@ function useScrollReveal() {
 
 
 
-export function LandingPage({ children }: { children?: React.ReactNode }) {
+export function LandingPage({ children, connectWallet }: { children?: React.ReactNode; connectWallet?: () => void }) {
   const setRef = useScrollReveal();
+  const navigate = useNavigate();
 
   return (
     <div className="overflow-x-hidden w-full max-w-full">
@@ -68,13 +69,16 @@ export function LandingPage({ children }: { children?: React.ReactNode }) {
                 with institutional-grade security.
               </p>
 
-              <Link
-                to="/dashboard"
+              <button
+                onClick={() => {
+                  if (connectWallet) connectWallet();
+                  navigate("/dashboard");
+                }}
                 className="neo-btn px-8 py-3.5 text-sm font-semibold w-fit inline-block text-center"
                 style={{ borderRadius: "6px", textDecoration: "none" }}
               >
                 Connect Wallet
-              </Link>
+              </button>
             </div>
 
             {/* Right: 3D Token Shader */}

@@ -76,7 +76,7 @@ function Dashboard({
         className="scroll-entry mb-10 flex flex-col md:flex-row md:items-start justify-between gap-6"
       >
         <div>
-          <h1 className="scanline-title text-5xl md:text-6xl mb-4">
+          <h1 className="scanline-title text-5xl md:text-6xl mb-4 whitespace-nowrap">
             Active Pools
           </h1>
           <p
@@ -97,137 +97,112 @@ function Dashboard({
               minWidth: "180px",
             }}
           >
-              <p
-                className="text-xs font-semibold uppercase tracking-wider mb-1"
+            <p
+              className="text-xs font-semibold uppercase tracking-wider mb-1"
+              style={{
+                color: "var(--color-text-muted)",
+                letterSpacing: "0.05em",
+              }}
+            >
+              Reward Rate
+            </p>
+            <p
+              className="text-2xl font-bold tabular-nums"
+              style={{ fontFamily: "var(--font-mono)" }}
+            >
+              {rewardRate}{" "}
+              <span
+                className="text-sm font-normal"
                 style={{
                   color: "var(--color-text-muted)",
-                  letterSpacing: "0.05em",
+                  fontFamily: "var(--font-body)",
                 }}
               >
-                Reward Rate
-              </p>
-              <p
-                className="text-2xl font-bold tabular-nums"
-                style={{ fontFamily: "var(--font-mono)" }}
+                RWD/sec
+              </span>
+            </p>
+          </div>
+          <div
+            className="px-6 py-5"
+            style={{
+              background: "var(--color-surface)",
+              border: "1px solid var(--color-surface-border)",
+              borderRadius: "8px",
+              minWidth: "140px",
+            }}
+          >
+            <p
+              className="text-xs font-semibold uppercase tracking-wider mb-1"
+              style={{
+                color: "var(--color-text-muted)",
+                letterSpacing: "0.05em",
+              }}
+            >
+              Global TVL
+            </p>
+            <p
+              className="text-2xl font-bold tabular-nums"
+              style={{ fontFamily: "var(--font-mono)" }}
+            >
+              {Number(globalTVL).toFixed(2)}
+            </p>
+          </div>
+          {account && (
+            <>
+              <div
+                className="px-6 py-5"
+                style={{
+                  background: "var(--color-surface)",
+                  border: "1px solid var(--color-surface-border)",
+                  borderRadius: "8px",
+                  minWidth: "140px",
+                }}
               >
-                {rewardRate}{" "}
-                <span
-                  className="text-sm font-normal"
+                <p
+                  className="text-xs font-semibold uppercase tracking-wider mb-1"
                   style={{
                     color: "var(--color-text-muted)",
-                    fontFamily: "var(--font-body)",
+                    letterSpacing: "0.05em",
                   }}
                 >
-                  RWD/sec
-                </span>
-              </p>
-            </div>
-            <div
-              className="px-6 py-5"
-              style={{
-                background: "var(--color-surface)",
-                border: "1px solid var(--color-surface-border)",
-                borderRadius: "8px",
-                minWidth: "140px",
-              }}
-            >
-              <p
-                className="text-xs font-semibold uppercase tracking-wider mb-1"
+                  My Staked
+                </p>
+                <p
+                  className="text-2xl font-bold tabular-nums"
+                  style={{ fontFamily: "var(--font-mono)" }}
+                >
+                  {Number(totalUserStaked).toFixed(2)}
+                </p>
+              </div>
+              <div
+                className="px-6 py-5"
                 style={{
-                  color: "var(--color-text-muted)",
-                  letterSpacing: "0.05em",
+                  background: "var(--color-surface)",
+                  border: "1px solid var(--color-surface-border)",
+                  borderRadius: "8px",
+                  minWidth: "140px",
                 }}
               >
-                Global TVL
-              </p>
-              <p
-                className="text-2xl font-bold tabular-nums"
-                style={{ fontFamily: "var(--font-mono)" }}
-              >
-                {Number(globalTVL).toFixed(2)}
-              </p>
-            </div>
-            {account && (
-              <>
-                <div
-                  className="px-6 py-5"
+                <p
+                  className="text-xs font-semibold uppercase tracking-wider mb-1"
                   style={{
-                    background: "var(--color-surface)",
-                    border: "1px solid var(--color-surface-border)",
-                    borderRadius: "8px",
-                    minWidth: "140px",
+                    color: "var(--color-text-muted)",
+                    letterSpacing: "0.05em",
                   }}
                 >
-                  <p
-                    className="text-xs font-semibold uppercase tracking-wider mb-1"
-                    style={{
-                      color: "var(--color-text-muted)",
-                      letterSpacing: "0.05em",
-                    }}
-                  >
-                    My Staked
-                  </p>
-                  <p
-                    className="text-2xl font-bold tabular-nums"
-                    style={{ fontFamily: "var(--font-mono)" }}
-                  >
-                    {Number(totalUserStaked).toFixed(2)}
-                  </p>
-                </div>
-                <div
-                  className="px-6 py-5"
-                  style={{
-                    background: "var(--color-surface)",
-                    border: "1px solid var(--color-surface-border)",
-                    borderRadius: "8px",
-                    minWidth: "140px",
-                  }}
+                  My Claimable
+                </p>
+                <p
+                  className="text-2xl font-bold tabular-nums"
+                  style={{ fontFamily: "var(--font-mono)", color: "var(--color-accent-green-text)" }}
                 >
-                  <p
-                    className="text-xs font-semibold uppercase tracking-wider mb-1"
-                    style={{
-                      color: "var(--color-text-muted)",
-                      letterSpacing: "0.05em",
-                    }}
-                  >
-                    My Claimable
-                  </p>
-                  <p
-                    className="text-2xl font-bold tabular-nums"
-                    style={{ fontFamily: "var(--font-mono)", color: "var(--color-accent-green-text)" }}
-                  >
-                    {Number(totalUserClaimable).toFixed(2)}
-                  </p>
-                </div>
-              </>
-            )}
-            <div
-              className="px-6 py-5"
-              style={{
-                background: "var(--color-surface)",
-                border: "1px solid var(--color-surface-border)",
-                borderRadius: "8px",
-                minWidth: "140px",
-              }}
-            >
-              <p
-                className="text-xs font-semibold uppercase tracking-wider mb-1"
-                style={{
-                  color: "var(--color-text-muted)",
-                  letterSpacing: "0.05em",
-                }}
-              >
-                Active Pools
-              </p>
-              <p
-                className="text-2xl font-bold tabular-nums"
-                style={{ fontFamily: "var(--font-mono)" }}
-              >
-                {POOLS.length}
-              </p>
-            </div>
-          </div>
+                  {Number(totalUserClaimable).toFixed(2)}
+                </p>
+              </div>
+            </>
+          )}
         </div>
+      </div>
 
       {/* Pools Grid */}
       <section ref={setRef(1)} className="scroll-entry stagger-1">
@@ -360,23 +335,23 @@ function App() {
         setRwdBalance(formatEther(bal));
 
         for (const pool of POOLS) {
-           const token = await getERC20Contract(pool.address, provider);
-           const poolTVL = await token.balanceOf(CHEF_ADDRESS);
-           tvlSum += poolTVL;
+          const token = await getERC20Contract(pool.address, provider);
+          const poolTVL = await token.balanceOf(CHEF_ADDRESS);
+          tvlSum += poolTVL;
 
-           const userInfo = await chef.userInfo(pool.pid, userAddr);
-           stakedSum += userInfo[0];
+          const userInfo = await chef.userInfo(pool.pid, userAddr);
+          stakedSum += userInfo[0];
 
-           const pRewards = await chef.pendingRewards(pool.pid, userAddr);
-           claimableSum += pRewards;
+          const pRewards = await chef.pendingRewards(pool.pid, userAddr);
+          claimableSum += pRewards;
         }
       } catch (e) {
         console.error("Error fetching user balances", e);
         // If not logged in, just fetch TVL
         for (const pool of POOLS) {
-           const token = await getERC20Contract(pool.address, provider);
-           const poolTVL = await token.balanceOf(CHEF_ADDRESS);
-           tvlSum += poolTVL;
+          const token = await getERC20Contract(pool.address, provider);
+          const poolTVL = await token.balanceOf(CHEF_ADDRESS);
+          tvlSum += poolTVL;
         }
       }
 
@@ -396,18 +371,7 @@ function App() {
     }
   }, [provider]);
 
-  useEffect(() => {
-    const checkConnection = async () => {
-      const prov = getProvider();
-      if (prov) {
-        const accounts = await prov.listAccounts();
-        if (accounts.length > 0) {
-          connectWallet();
-        }
-      }
-    };
-    checkConnection();
-  }, []);
+
 
   return (
     <div className="min-h-screen flex flex-col">
@@ -562,22 +526,7 @@ function App() {
       {/* ── Page Content ── */}
       <Routes>
         {/* Landing page gets full width — no constrained main wrapper */}
-        <Route path="/" element={
-          <LandingPage>
-            <main className="max-w-[1200px] w-full mx-auto px-6 py-10 flex-1">
-              <Dashboard
-                provider={provider}
-                account={account}
-                connectWallet={connectWallet}
-                totalAllocPoint={totalAllocPoint}
-                rewardRate={rewardRate}
-                globalTVL={globalTVL}
-                totalUserStaked={totalUserStaked}
-                totalUserClaimable={totalUserClaimable}
-              />
-            </main>
-          </LandingPage>
-        } />
+        <Route path="/" element={<LandingPage connectWallet={connectWallet} />} />
 
         {/* App pages get the constrained layout */}
         <Route

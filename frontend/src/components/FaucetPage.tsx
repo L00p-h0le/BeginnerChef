@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { BrowserProvider, parseUnits } from "ethers";
 import { getERC20Contract, POOLS, REWARD_TOKEN_ADDRESS } from "../utils/contracts";
+import { TokenIcon } from "./TokenIcon";
 
 interface FaucetPageProps {
   provider: BrowserProvider | null;
@@ -19,10 +20,10 @@ function buildTokenList(): TokenConfig[] {
   const tokens: TokenConfig[] = POOLS.map((pool) => ({
     address: pool.address,
     symbol: pool.symbol,
-    label: `Stake Token ${pool.pid + 1}`,
+    label: `${pool.symbol} Token`,
     description: `${pool.symbol} per request`,
-    accentBg: pool.pid === 0 ? "var(--color-accent-blue)" : "var(--color-accent-yellow)",
-    accentText: pool.pid === 0 ? "var(--color-accent-blue-text)" : "var(--color-accent-yellow-text)",
+    accentBg: "var(--color-surface-high)",
+    accentText: "var(--color-text-primary)",
   }));
 
   tokens.push({
@@ -120,16 +121,7 @@ export function FaucetPage({ provider }: FaucetPageProps) {
             >
               {/* Token Badge */}
               <div className="flex items-center gap-3">
-                <div
-                  className="w-10 h-10 flex items-center justify-center text-sm font-bold"
-                  style={{
-                    background: token.accentBg,
-                    color: token.accentText,
-                    borderRadius: "8px",
-                  }}
-                >
-                  {token.symbol.substring(0, 3)}
-                </div>
+                <TokenIcon symbol={token.symbol} className="w-10 h-10 shrink-0" />
                 <div>
                   <h3
                     className="font-semibold"
