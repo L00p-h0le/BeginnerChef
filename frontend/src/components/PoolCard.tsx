@@ -204,26 +204,6 @@ export function PoolCard({ provider, pid, address, symbol, totalAllocPoint, rewa
           >
             {poolShare}% Share
           </span>
-          {Number(poolTVL) > 0 && (
-            <span
-              className="pill-badge relative group flex items-center gap-1"
-              style={{
-                background: "var(--color-accent-green)",
-                color: "var(--color-accent-green-text)",
-              }}
-            >
-              {(( (Number(poolShare) / 100) * Number(rewardRate) * 31536000 ) / Number(poolTVL) * 100).toFixed(0)}% APR
-              <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="opacity-70 cursor-help">
-                <circle cx="12" cy="12" r="10"></circle>
-                <line x1="12" y1="16" x2="12" y2="12"></line>
-                <line x1="12" y1="8" x2="12.01" y2="8"></line>
-              </svg>
-              <div className="absolute hidden group-hover:block bottom-full mb-2 right-0 w-48 p-2 text-xs normal-case tracking-normal z-10 text-left shadow-lg"
-                   style={{ background: "var(--color-surface-high)", color: "var(--color-text-primary)", border: "1px solid var(--color-surface-border)", borderRadius: "6px" }}>
-                Assumes 1:1 value parity between staked and reward tokens — no price oracle is used in this testnet demo.
-              </div>
-            </span>
-          )}
         </div>
       </div>
 
@@ -307,40 +287,37 @@ export function PoolCard({ provider, pid, address, symbol, totalAllocPoint, rewa
           >
             Stake
           </label>
-          <div className="flex items-center gap-2">
-            <span
-              className="text-xs tabular-nums"
-              style={{ color: "var(--color-text-muted)", fontFamily: "var(--font-mono)" }}
-            >
-              Balance: {Number(balance).toFixed(4)} {symbol}
-            </span>
+          <span
+            className="text-xs tabular-nums"
+            style={{ color: "var(--color-text-muted)", fontFamily: "var(--font-mono)" }}
+          >
+            Balance: {Number(balance).toFixed(4)} {symbol}
+          </span>
+        </div>
+        <div className="flex gap-2">
+          <div className="relative flex-1 flex items-center">
+            <input
+              type="number"
+              min="0"
+              placeholder="Amount to stake"
+              value={stakeAmount}
+              onChange={(e) => {
+                const val = e.target.value;
+                if (Number(val) >= 0 || val === "") setStakeAmount(val);
+              }}
+              className="input-field w-full pr-14"
+            />
             <button
               onClick={() => setStakeAmount(balance)}
-              className="text-xs font-semibold px-2 py-0.5 transition-colors"
+              className="absolute right-3 text-xs font-semibold hover:opacity-80 transition-opacity"
               style={{
-                background: "var(--color-surface-high)",
-                border: "1px solid var(--color-surface-border)",
-                borderRadius: "4px",
-                color: "var(--color-text-primary)",
+                color: "var(--color-text-muted)",
               }}
               title="Use max balance"
             >
               Max
             </button>
           </div>
-        </div>
-        <div className="flex gap-2">
-          <input
-            type="number"
-            min="0"
-            placeholder="Amount to stake"
-            value={stakeAmount}
-            onChange={(e) => {
-              const val = e.target.value;
-              if (Number(val) >= 0 || val === "") setStakeAmount(val);
-            }}
-            className="input-field flex-1"
-          />
           {needsApproval ? (
             <button
               onClick={handleApprove}
@@ -372,32 +349,31 @@ export function PoolCard({ provider, pid, address, symbol, totalAllocPoint, rewa
           >
             Withdraw
           </label>
-          <button
-            onClick={() => setWithdrawAmount(staked)}
-            className="text-xs font-semibold px-2 py-0.5 transition-colors"
-            style={{
-              background: "var(--color-surface-high)",
-              border: "1px solid var(--color-surface-border)",
-              borderRadius: "4px",
-              color: "var(--color-text-primary)",
-            }}
-            title="Withdraw all staked"
-          >
-            Max
-          </button>
         </div>
         <div className="flex gap-2">
-          <input
-            type="number"
-            min="0"
-            placeholder="Amount to withdraw"
-            value={withdrawAmount}
-            onChange={(e) => {
-              const val = e.target.value;
-              if (Number(val) >= 0 || val === "") setWithdrawAmount(val);
-            }}
-            className="input-field flex-1"
-          />
+          <div className="relative flex-1 flex items-center">
+            <input
+              type="number"
+              min="0"
+              placeholder="Amount to withdraw"
+              value={withdrawAmount}
+              onChange={(e) => {
+                const val = e.target.value;
+                if (Number(val) >= 0 || val === "") setWithdrawAmount(val);
+              }}
+              className="input-field w-full pr-14"
+            />
+            <button
+              onClick={() => setWithdrawAmount(staked)}
+              className="absolute right-3 text-xs font-semibold hover:opacity-80 transition-opacity"
+              style={{
+                color: "var(--color-text-muted)",
+              }}
+              title="Withdraw all staked"
+            >
+              Max
+            </button>
+          </div>
           <button
             onClick={handleWithdraw}
             disabled={loading || !withdrawAmount || Number(withdrawAmount) <= 0}

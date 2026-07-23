@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { BrowserProvider, parseUnits } from "ethers";
+import { toast } from "sonner";
 import { getERC20Contract, POOLS, REWARD_TOKEN_ADDRESS } from "../utils/contracts";
 import { TokenIcon } from "./TokenIcon";
 
@@ -42,14 +43,12 @@ const MINT_AMOUNT = "1000";
 
 export function FaucetPage({ provider }: FaucetPageProps) {
   const [loadingToken, setLoadingToken] = useState<string | null>(null);
-  const [statusMessage, setStatusMessage] = useState<Record<string, { type: "success" | "error"; text: string }>>({});
 
   const tokens = buildTokenList();
 
   const mintTokens = async (token: TokenConfig) => {
     if (!provider) return;
     setLoadingToken(token.address);
-    setStatusMessage((prev) => ({ ...prev, [token.address]: { type: "success", text: "" } }));
 
     try {
       const contract = await getERC20Contract(token.address, provider);
@@ -58,16 +57,10 @@ export function FaucetPage({ provider }: FaucetPageProps) {
 
       const tx = await contract.mint(userAddr, parseUnits(MINT_AMOUNT));
       await tx.wait();
-      setStatusMessage((prev) => ({
-        ...prev,
-        [token.address]: { type: "success", text: `Minted ${MINT_AMOUNT} ${token.symbol}` },
-      }));
+      toast.success(`Minted ${MINT_AMOUNT} ${token.symbol}`);
     } catch (err) {
       console.error(err);
-      setStatusMessage((prev) => ({
-        ...prev,
-        [token.address]: { type: "error", text: "Mint failed" },
-      }));
+      toast.error(`Minting ${token.symbol} failed`);
     }
     setLoadingToken(null);
   };
@@ -160,21 +153,6 @@ export function FaucetPage({ provider }: FaucetPageProps) {
                   "Mint"
                 )}
               </button>
-
-              {/* Status */}
-              {statusMessage[token.address]?.text && (
-                <p
-                  className="text-xs font-medium text-center"
-                  style={{
-                    color:
-                      statusMessage[token.address].type === "success"
-                        ? "var(--color-success)"
-                        : "var(--color-error)",
-                  }}
-                >
-                  {statusMessage[token.address].text}
-                </p>
-              )}
             </div>
           ))}
         </div>
