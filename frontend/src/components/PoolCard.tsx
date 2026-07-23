@@ -60,7 +60,7 @@ export function PoolCard({ provider, pid, address, symbol, totalAllocPoint }: Po
   }, [provider, pid, totalAllocPoint]);
 
   const executeTx = async (
-    txFn: () => Promise<any>,
+    txFn: (prov: BrowserProvider) => Promise<any>,
     loadingMsg: string,
     successMsg: string,
     errorMsg: string,
@@ -69,7 +69,7 @@ export function PoolCard({ provider, pid, address, symbol, totalAllocPoint }: Po
     if (!provider) return;
     setLoading(true);
     try {
-      const tx = await txFn();
+      const tx = await txFn(provider);
       await toast.promise(tx.wait(), {
         loading: loadingMsg,
         success: successMsg,
@@ -87,8 +87,8 @@ export function PoolCard({ provider, pid, address, symbol, totalAllocPoint }: Po
 
   const handleApprove = () => {
     executeTx(
-      async () => {
-        const token = await getERC20Contract(address, provider);
+      async (prov) => {
+        const token = await getERC20Contract(address, prov);
         return token.approve(CHEF_ADDRESS, parseUnits(stakeAmount || "0"));
       },
       "Approving...",
@@ -100,8 +100,8 @@ export function PoolCard({ provider, pid, address, symbol, totalAllocPoint }: Po
   const handleStake = () => {
     if (!stakeAmount || Number(stakeAmount) <= 0) return;
     executeTx(
-      async () => {
-        const chef = await getChefContract(provider);
+      async (prov) => {
+        const chef = await getChefContract(prov);
         return chef.deposit(pid, parseUnits(stakeAmount));
       },
       "Staking...",
@@ -118,8 +118,8 @@ export function PoolCard({ provider, pid, address, symbol, totalAllocPoint }: Po
       return;
     }
     executeTx(
-      async () => {
-        const chef = await getChefContract(provider);
+      async (prov) => {
+        const chef = await getChefContract(prov);
         return chef.withdraw(pid, parseUnits(withdrawAmount));
       },
       "Withdrawing...",
@@ -131,8 +131,8 @@ export function PoolCard({ provider, pid, address, symbol, totalAllocPoint }: Po
 
   const handleClaim = () => {
     executeTx(
-      async () => {
-        const chef = await getChefContract(provider);
+      async (prov) => {
+        const chef = await getChefContract(prov);
         return chef.withdraw(pid, 0);
       },
       "Claiming rewards...",
@@ -144,8 +144,8 @@ export function PoolCard({ provider, pid, address, symbol, totalAllocPoint }: Po
   const handleEmergencyWithdraw = () => {
     if (!window.confirm("Are you sure? Emergency Withdraw will forfeit all your pending rewards.")) return;
     executeTx(
-      async () => {
-        const chef = await getChefContract(provider);
+      async (prov) => {
+        const chef = await getChefContract(prov);
         return chef.emergencyWithdraw(pid);
       },
       "Emergency withdrawing...",
